@@ -47,3 +47,31 @@ The main thing we need is proposition 4 - this tells us that the residuals in a 
 ![image-20230507212545903](/Users/wangzuxun/Library/Application Support/typora-user-images/image-20230507212545903.png)
 
 ![image-20230507221431020](/Users/wangzuxun/Library/Application Support/typora-user-images/image-20230507221431020.png)
+
+## Meeting
+
+for my project, I only have the sensor data.
+
+Based on the pervious work, and develop your own stuff.
+
+Basically, read both two papers as they are equally important.
+
+proposition 3 4 on the paper.
+
+	- try to prove proposition 3? 
+	- to elaborate on different cases, where 3 have ground truth for initialisation, you have some specific chi-2 values.
+	- 4 does not, but also result in some chi-2 value different to 3, but noisy.
+
+workshop2 - code base from topic 2.
+
+​	- maybe try to search about different estimation algorithms
+
+Fill in the Project Plan form.
+
+​	- Ethics. Nothing really we need to worry too much as we don't apply robots on street which may invovle privacy issues.
+
+early june -> introduction.
+
+---
+
+Simon also provide a short template for each meeting to remind himself what has been discussed and planned for the next week.
