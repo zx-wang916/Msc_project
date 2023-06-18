@@ -1,78 +1,4 @@
-% Test of propositions 3 and 4 on a linear example which consists of a
-% target.
-close all;
-clear all;
-clc;
-
-import g2o.core.*;
-import two_d_tracking_model_answer.*;
-
-% Number of steps per episode
-numberOfTimeSteps = 100;
-
-% Nuumber of episodes
-numberOfEpisodes = 2000;
-
-% If set to false, we test proposition 3, which initializes the graph at the
-% ground truth value, and does not optimize. If set to true, we test
-% proposition 4, which is the distribution after optimizing with noisy
-% measurements
-testProposition4 = true;
-
-chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
-
-% This uses the matlab parallel toolbox which can speed up running the code
-% significantly
-parfor r = 1 : numberOfEpisodes
-    fprintf('%03d\n', r)
-    chi2Store(r, :) = runExample(numberOfTimeSteps, 1, 10000, testProposition4);
-end
-
-% Now plot the results. The first two figures show the edge-by-edge chi2
-% values. Note that propositions 3 and 4 actually say nothing about
-% edge-by-edge behaviour. They only describe the behaviour of the sum of
-% all of the chi2 values over all of the edges. (For proposition 3, the
-% errors are all independent on an edge-by-edge basis, and so the graphs
-% are still useful.)
-
-figure(1)
-% TimestepMean calculates the average chi2 value for a specific edge in the
-% graph for all run. Not the average chi2 for all edges in the graph in a
-% single run. 
-timestepMean = mean(chi2Store,1);
-hold off
-plot(timestepMean)
-hold on
-plot(movmean(timestepMean, numberOfTimeSteps), 'LineWidth', 4)
-title('Edge-by-Edge mean chi2')
-
-figure(2)
-timestepCov = mean(chi2Store.^2,1) - timestepMean.^2;
-hold off
-plot(timestepCov)
-hold on
-
-plot(movmean(timestepCov, numberOfTimeSteps), 'LineWidth', 4)
-title('Edge-by-Edge covariance chi2')
-
-% This figure works out and plots the mean and covarianace for the sum of
-% the chi2 values over all edges. Propositions 3 and 4 are guaranteed to
-% apply to ONLY these values.
-
-figure(3)
-chi2Sum = sum(chi2Store,2);
-
-figure(3)
-hold off
-plot(chi2Sum)
-hold on
-
-title(sprintf('Mean: %f; Covariance %f', mean(chi2Sum), cov(chi2Sum)))
-
-%keyboard
-
-
-function chi2List = runExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4)
+function [chi2, chi2List] = runLinearExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4)
 
     import g2o.core.*;
     import two_d_tracking_model_answer.*;
@@ -179,5 +105,6 @@ function chi2List = runExample(numberOfTimeSteps, omegaRScale, omegaQScale, test
     
     % Compute the chi2 value
     [chi2,chi2List] = graph.chi2();
+%     edges = graph.edges();
 
 end
