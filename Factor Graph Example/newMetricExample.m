@@ -10,20 +10,18 @@ import two_d_tracking_model_answer.*;
 numberOfTimeSteps = 100;
 
 % Number of episodes
-numberOfEpisodes = 2000;
+numberOfEpisodes = 20;
 
-% True value of n (n_x + n_z)
-N = 2 * numberOfTimeSteps - 1;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
 % proposition 4, which is the distribution after optimizing with noisy
 % measurements
-testProposition4 = true;
+testProposition4 = false;
 
 % Define the range and step for Omega scales
-omegaRScaleArray = 0.1:0.1:0.2;
-omegaQScaleArray = 0.1:0.1:0.2;
+omegaRScaleArray = 1.0:0.1:1.9;
+omegaQScaleArray = 1.0:0.1:1.9;
 
 % Create a matrix to store C values
 C_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
@@ -35,14 +33,26 @@ for i = 1:length(omegaRScaleArray)
         % Initialize chi2Store for each episode
         chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
         chi2SumStore = zeros(numberOfEpisodes, 1);
+        edgeStore = cell(numberOfEpisodes, 1);
         
-        % Loop over all episodes
+        % Get chi2Sum and chi2 values, along with the edges in graph for each
+        % running episode
         parfor r = 1 : numberOfEpisodes
             fprintf('OmegaRScale: %.2f, OmegaQSclae: %.2f, Episode: %03d\n',...
                 omegaRScaleArray(i), omegaQScaleArray(j),r)
-            [chi2SumStore(r), chi2Store(r, :)] = ...
+            [edges, chi2SumStore(r), chi2Store(r, :)] = ...
                 runLinearExample(numberOfTimeSteps, ...
                 omegaRScaleArray(i), omegaQScaleArray(j), testProposition4);
+            % Store the edges in a cell array
+            edgeStore{r} = edges;
+        end
+
+        % Compute the number of dimensions
+        % We can compute it using edges from any episode, as they are the same for
+        % all episodes.
+        dimZ = 0; % True value of n (n_x + n_z)
+        for k = 1 : length(edgeStore{1})
+            dimZ = dimZ + edgeStore{1}{k}.dimension();
         end
 
         % Calculate S, meanChi2, covChi2
@@ -55,7 +65,7 @@ for i = 1:length(omegaRScaleArray)
         covChi2 = cov(chi2SumStore);
 
         % Compute the Consistency Measurement C
-        C = abs(log(meanChi2/N)) + abs(log(S/2*N));
+        C = abs(log(meanChi2/dimZ)) + abs(log(S/2*dimZ));
         
         % Store C in matrix
         C_store(i,j) = C;

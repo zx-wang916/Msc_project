@@ -10,14 +10,11 @@ import two_d_tracking_model_answer.*;
 numberOfTimeSteps = 100;
 
 % Number of episodes
-numberOfEpisodes = 2000;
-
-% True value of n (n_x + n_z)
-N = 6 * numberOfTimeSteps - 4;
+numberOfEpisodes = 20;
 
 % Omega Scales
-omegaRScale = 0.001;
-omegaQScale = 0.001;
+omegaRScale = 1;
+omegaQScale = 1;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
@@ -27,12 +24,25 @@ testProposition4 = false;
 
 chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
 chi2SumStore = zeros(numberOfEpisodes, 1);
+edgeStore = cell(numberOfEpisodes, 1);
 
+% Get chi2Sum and chi2 values, along with the edges in graph for each
+% running episode
 parfor r = 1 : numberOfEpisodes
     fprintf('%03d\n', r)
-    [chi2SumStore(r), chi2Store(r, :)] = ...
+    [edges, chi2SumStore(r), chi2Store(r, :)] = ...
         runLinearExample(numberOfTimeSteps, ...
         omegaRScale, omegaQScale, testProposition4);
+    % Store the edges in a cell array
+    edgeStore{r} = edges;
+end
+
+% Compute the number of dimensions
+% We can compute it using edges from any episode, as they are the same for
+% all episodes.
+dimZ = 0; % True value of n (n_x + n_z)
+for i = 1 : length(edgeStore{1})
+    dimZ = dimZ + edgeStore{1}{i}.dimension();
 end
 
 % TimestepMean calculates the average chi2 value for a specific edge in the
@@ -56,8 +66,6 @@ covChi2 = cov(chi2SumStore);
 title(sprintf('Mean: %f; Covariance %f', meanChi2, covChi2))
 
 % Compute the Consistency Measurement
-C = abs(log(meanChi2/N)) + abs(log(S/2*N));
-
-% TODO: Compute C using different Omega values AND plot results.
+C = abs(log(meanChi2/dimZ)) + abs(log(S/2*dimZ));
 
 
