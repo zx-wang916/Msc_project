@@ -10,7 +10,7 @@ import two_d_tracking_model_answer.*;
 numberOfTimeSteps = 100;
 
 % Number of episodes
-numberOfEpisodes = 2000;
+numberOfEpisodes = 1000;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
@@ -19,8 +19,10 @@ numberOfEpisodes = 2000;
 testProposition4 = false;
 
 % Define the range and step for Omega scales
-omegaRScaleArray = 1.0:0.1:1.9;
-omegaQScaleArray = 1.0:0.1:1.9;
+omegaRScaleArray = 0.1:0.1:1.9;
+omegaQScaleArray = 0.1:0.1:1.9;
+
+[RM, QM] = meshgrid(omegaRScaleArray, omegaQScaleArray);
 
 % Create a matrix to store C values
 C_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
@@ -30,54 +32,50 @@ meanChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
 covChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
 
 % Start a parallel pool
-parpool;
+%parpool;
 
 % Loop over all possible Omega values
-for i = 1:length(omegaRScaleArray)
-    for j = 1:length(omegaQScaleArray)
+parfor i = 1:numel(RM)
         
-        % Initialize chi2Store for each episode
-        chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
-        chi2SumStore = zeros(numberOfEpisodes, 1);
-        edgeStore = cell(numberOfEpisodes, 1);
+    % Initialize chi2Store for each episode
+    chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
+    chi2SumStore = zeros(numberOfEpisodes, 1);
+    edgeStore = cell(numberOfEpisodes, 1);
 
-        % Get chi2Sum and chi2 values, along with the edges in graph for each
-        % running episode
-        parfor r = 1 : numberOfEpisodes
-            fprintf('OmegaRScale: %.2f, OmegaQSclae: %.2f, Episode: %03d\n',...
-                omegaRScaleArray(i), omegaQScaleArray(j),r)
-            [edges, chi2SumStore(r), chi2Store(r, :)] = ...
-                runLinearExample(numberOfTimeSteps, ...
-                omegaRScaleArray(i), omegaQScaleArray(j), testProposition4);
-            % Store the edges in a cell array
-            edgeStore{r} = edges;
-        end
+    % Get chi2Sum and chi2 values, along with the edges in graph for each
+    % running episode
+    fprintf('OmegaRScale: %.2f, OmegaQScale: %.2f\n', ...
+        RM(i), QM(i))
 
-        % Compute the number of dimensions
-        % We can compute it using edges from any episode, as they are the same for
-        % all episodes.
-        dimZ = 0; % True value of n (n_x + n_z)
-        for k = 1 : length(edgeStore{1})
-            dimZ = dimZ + edgeStore{1}{k}.dimension();
-        end
+    % First run retrieves the graph dimensions
+    [chi2SumStore(1), chi2Store(1, :), edges, dimX, dimZ] = ...
+        runLinearExample(numberOfTimeSteps, ...
+        RM(i), QM(i), testProposition4);
 
-        % Calculate S, meanChi2, covChi2
-        timestepMean = mean(chi2Store,1);
-        difference = chi2Store - timestepMean;
-        squaredDifference = difference .^ 2;
-        totalSum = sum(squaredDifference(:));
-        S = totalSum / (numberOfTimeSteps * (numberOfEpisodes - 1));
-        meanChi2 = mean(chi2SumStore);
-        covChi2 = cov(chi2SumStore);
-
-        % Store C, meanChi2, and covChi2 in matrices
-        C_store(i,j) = abs(log(meanChi2/dimZ)) + abs(log(S/2*dimZ));
-        meanChi2_store(i,j) = meanChi2;
-        covChi2_store(i,j) = covChi2;
+    for r = 2 : numberOfEpisodes
+        [chi2SumStore(r), chi2Store(r, :)] = ...
+            runLinearExample(numberOfTimeSteps, ...
+            RM(i), QM(i), testProposition4);
     end
+
+    % Calculate meanChi2, covChi2
+    meanChi2 = mean(chi2SumStore);
+    covChi2 = cov(chi2SumStore);
+
+    % Compute the number of degrees of freedom
+    if (testProposition4 == true)
+        N = dimZ - dimX;
+    else
+        N = dimZ;
+    end
+
+    % Store C, meanChi2, and covChi2 in matrices
+    C_store(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
+    meanChi2_store(i) = meanChi2;
+    covChi2_store(i) = covChi2;
 end
 
-delete(gcp('nocreate')); % stop the parallel pool
+%delete(gcp('nocreate')); % stop the parallel pool
 
 %%
 % Plotting

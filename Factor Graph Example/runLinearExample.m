@@ -1,9 +1,9 @@
-function [edges, chi2, chi2List] = runLinearExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4)
+function [chi2, chi2List, edges, dimX, dimZ] = runLinearExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4)
 
     import g2o.core.*;
     import two_d_tracking_model_answer.*;
     
-    fprintf('runExample\n')
+    %fprintf('runExample\n')
     
     % Some parameters
     
@@ -105,5 +105,20 @@ function [edges, chi2, chi2List] = runLinearExample(numberOfTimeSteps, omegaRSca
     
     % Compute the chi2 value
     [chi2,chi2List] = graph.chi2();
-    edges = graph.edges();
+    
+
+    if (nargout == 5)
+        dimX = 0;
+        dimZ = 0;
+        edges = graph.edges();
+        vertices = graph.vertices();
+
+        for e = 1 : length(edges)
+            dimZ = dimZ + edges{e}.dimension();
+        end
+
+        for v =  1 : length(vertices)
+            dimX = dimX + vertices{v}.dimension();
+        end
+    end
 end

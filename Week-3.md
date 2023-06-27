@@ -10,6 +10,12 @@
   - This paper describe least squares minimisation methods, e.g., g2o, Ceres, GTSAM and SE-Sync.
   - Evaluate them on an array of publicly available synthetic and real-world pose graph datasets.
 
+New Video:
+
+*Wolfram Burgard, Giorgio Grisetti, and Cyrill Stachniss: Graph-based SLAM in 20 Minutes*
+
+https://www.youtube.com/watch?v=Alu59K8zvYs
+
 ## Problems
 
 - Matlab Code
