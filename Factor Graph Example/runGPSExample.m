@@ -9,7 +9,7 @@ function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, 
     R = eye(2);
     
     % Odometry covariance
-    Q = diag([0.1 0.05 pi/18000].^2);
+    Q = diag([0.1 0.05 pi/180].^2);
     
     % Work out the information matrices
     omegaR = omegaRScale * inv(R);
@@ -59,13 +59,6 @@ function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, 
         
         % Create the object state vertex
         vertices{k} = VehicleStateVertex();
-        
-        % Set the initial estimate.
-        if (testProposition4 == false)
-            vertices{k}.setEstimate(trueX(:, k));
-        else
-            vertices{k}.setEstimate(0*trueX(:, k));
-        end
 
         % Added the vertex to the graph.
         graph.addVertex(vertices{k});
@@ -92,8 +85,13 @@ function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, 
         end
                 
         % Set the initial estimate.
-        vertices{k}.setEstimate(X0(:,k));
-    
+%         vertices{k}.setEstimate(X0(:,k));
+        if (testProposition4 == false)
+            vertices{k}.setEstimate(trueX(:, k));
+        else
+            vertices{k}.setEstimate(X0(:,k));
+        end
+        
         % Create the measurement edge
         e = GPSMeasurementEdge();
         

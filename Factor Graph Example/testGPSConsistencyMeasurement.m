@@ -6,14 +6,14 @@ import g2o.core.*;
 import odometry_model_answer.*;
 
 % Number of steps per episode
-numberOfTimeSteps = 2000;
+numberOfTimeSteps = 20;
 
 % Number of episodes
-numberOfEpisodes = 100;
+numberOfEpisodes = 2000;
 
 % Omega Scales
 omegaRScale = 1;
-omegaQScale = 100;
+omegaQScale = 1;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
