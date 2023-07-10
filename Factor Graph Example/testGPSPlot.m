@@ -3,14 +3,13 @@ clear all;
 clc;
 
 import g2o.core.*;
-import two_d_tracking_model_answer.*;
-
+import odometry_model_answer.*;
 
 % Number of steps per episode
-numberOfTimeSteps = 100;
+numberOfTimeSteps = 40;
 
 % Number of episodes
-numberOfEpisodes = 1000;
+numberOfEpisodes = 10000;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
@@ -19,8 +18,8 @@ numberOfEpisodes = 1000;
 testProposition4 = true;
 
 % Parameters to change the frequency of measurement updates
-numObs = 20;
-obsPeriod = 2;
+numObs = 100;
+obsPeriod = 1;
 
 % Define the range and step for Omega scales
 omegaRScaleArray = 0.1:0.1:1.9;
@@ -34,9 +33,6 @@ C_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
 % Create matrices to store meanChi2 and covChi2 values
 meanChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
 covChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
-
-% Start a parallel pool
-%parpool;
 
 % Compute the number of edges
 numberOfEdges = 2 * numObs - 1 + ...
@@ -58,15 +54,13 @@ parfor i = 1:numel(RM)
 
     % First run retrieves the graph dimensions
     [chi2SumStore(1), chi2Store(1, :), ~, dimX, dimZ] = ...
-        runLinearExample(numberOfTimeSteps, ...
-        RM(i), QM(i), testProposition4, ...
-        numObs, obsPeriod);
+        runGPSExample(numberOfTimeSteps, ...
+        RM(i), QM(i), testProposition4);
 
     for r = 2 : numberOfEpisodes
         [chi2SumStore(r), chi2Store(r, :)] = ...
-            runLinearExample(numberOfTimeSteps, ...
-            RM(i), QM(i), testProposition4, ...
-            numObs, obsPeriod);
+            runGPSExample(numberOfTimeSteps, ...
+            RM(i), QM(i), testProposition4);
     end
 
     % Calculate meanChi2, covChi2
@@ -97,8 +91,8 @@ xlabel('omegaRScale');
 ylabel('omegaQScale');
 title('Consistency Measurement (C) for different Omega values');
 axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-saveas(gcf, "~/Desktop/week9/C_measure_rate_20-2_prop4.png")
-writematrix(C_store, '~/Desktop/week9/C_measure_rate_20-2_prop4.csv')
+saveas(gcf, "~/Desktop/week9/C_gps_prop4.png")
+writematrix(C_store, '~/Desktop/week9/C_gps_prop4.csv')
 
 % Plot the meanChi2 and covChi2 values
 figure(2)
@@ -108,8 +102,8 @@ xlabel('omegaRScale');
 ylabel('omegaQScale');
 title('Mean Chi2 for different Omega values');
 axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-saveas(gcf, "~/Desktop/week9/meanChi2_measure_rate_20-2_prop4.png")
-writematrix(meanChi2_store, '~/Desktop/week9/meanChi2_measure_rate_20-2_prop4.csv')
+saveas(gcf, "~/Desktop/week9/meanChi2_gps_prop4.png")
+writematrix(meanChi2_store, '~/Desktop/week9/meanChi2_gps_prop4.csv')
 
 % Plot the meanChi2 and covChi2 values
 figure(3)
@@ -119,5 +113,5 @@ xlabel('omegaRScale');
 ylabel('omegaQScale');
 title('Covariance Chi2 for different Omega values');
 axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-saveas(gcf, "~/Desktop/week9/covChi2_measure_rate_20-2_prop4.png")
-writematrix(covChi2_store, '~/Desktop/week9/covChi2_measure_rate_20-2_prop4.csv')
+saveas(gcf, "~/Desktop/week9/covChi2_gps_prop4.png")
+writematrix(covChi2_store, '~/Desktop/week9/covChi2_gps_prop4.csv')

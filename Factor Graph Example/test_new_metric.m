@@ -5,7 +5,6 @@ clc;
 import g2o.core.*;
 import two_d_tracking_model_answer.*;
 
-
 % Number of steps per episode
 numberOfTimeSteps = 100;
 
@@ -13,16 +12,25 @@ numberOfTimeSteps = 100;
 numberOfEpisodes = 1000;
 
 % Omega Scales
-omegaRScale = 0.1;
-omegaQScale = 0.1;
+omegaRScale = 1;
+omegaQScale = 1;
+
+% Parameters to change the frequency of measurement updates
+numObs = 100;
+obsPeriod = 1;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
 % proposition 4, which is the distribution after optimizing with noisy
 % measurements
-testProposition4 = true;
+testProposition4 = false;
 
-chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
+% Compute the number of edges
+numberOfEdges = 2 * numObs - 1 + ...
+    floor((numberOfTimeSteps - numObs) / obsPeriod) + ...
+    numberOfTimeSteps - numObs;
+
+chi2Store = zeros(numberOfEpisodes, numberOfEdges);
 chi2SumStore = zeros(numberOfEpisodes, 1);
 edgeStore = cell(numberOfEpisodes, 1);
 
@@ -30,7 +38,7 @@ edgeStore = cell(numberOfEpisodes, 1);
 % running episode
 
 % First run retrieves the graph dimensions
-[chi2SumStore(1), chi2Store(1, :), edges, dimX, dimZ] = ...
+[chi2SumStore(1), chi2Store(1, :), ~, dimX, dimZ] = ...
     runLinearExample(numberOfTimeSteps, ...
     omegaRScale, omegaQScale, testProposition4);
 
@@ -40,7 +48,7 @@ parfor r = 2 : numberOfEpisodes
         runLinearExample(numberOfTimeSteps, ...
         omegaRScale, omegaQScale, testProposition4);
     % Store the edges in a cell array
-    edgeStore{r} = edges;
+%     edgeStore{r} = edges;
 end
 
 

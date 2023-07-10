@@ -1,9 +1,15 @@
-function [chi2, chi2List, edges, dimX, dimZ] = runLinearExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4)
+function [chi2, chi2List, edges, dimX, dimZ] = ...
+    runLinearExample(numberOfTimeSteps, omegaRScale, omegaQScale, ...
+    testProposition4, numObs, obsPeriod)
 
     import g2o.core.*;
     import two_d_tracking_model_answer.*;
     
-    %fprintf('runExample\n')
+    % Add measurement edge to every vertex by default
+    if (nargin == 4)
+        numObs = numberOfTimeSteps;
+        obsPeriod = 1;
+    end
     
     % Some parameters
     
@@ -77,19 +83,21 @@ function [chi2, chi2List, edges, dimX, dimZ] = runLinearExample(numberOfTimeStep
             graph.addEdge(processModelEdge);
         end
         
-        % Create the measurement edge
-        e = ObjectMeasurementEdge();
-        
-        % Link it so that it connects to the vertex we want to estimate
-        e.setVertex(1, v{n});
-        
-        % Set the measurement value and the measurement covariance
-        e.setMeasurement(z(:,n));
-        e.setInformation(omegaR);
-        
-        % Add the edge to the graph; the graph now knows we have these edges
-        % which need to be added
-        graph.addEdge(e);
+        if (n < numObs || rem(n, obsPeriod) == 0)
+            % Create the measurement edge
+            e = ObjectMeasurementEdge();
+            
+            % Link it so that it connects to the vertex we want to estimate
+            e.setVertex(1, v{n});
+            
+            % Set the measurement value and the measurement covariance
+            e.setMeasurement(z(:,n));
+            e.setInformation(omegaR);
+            
+            % Add the edge to the graph; the graph now knows we have these edges
+            % which need to be added
+            graph.addEdge(e);
+        end
     end
     
     % Graph construction complete
