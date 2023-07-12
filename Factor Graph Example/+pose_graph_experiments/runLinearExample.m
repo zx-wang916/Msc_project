@@ -3,6 +3,7 @@ function [chi2, chi2List, edges, dimX, dimZ] = ...
     testProposition4, numObs, obsPeriod)
 
     import g2o.core.*;
+    import pose_graph_experiments.*;
     import two_d_tracking_model_answer.*;
     
     % Add measurement edge to every vertex by default

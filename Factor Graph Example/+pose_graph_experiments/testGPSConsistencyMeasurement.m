@@ -3,6 +3,7 @@ clear all;
 clc;
 
 import g2o.core.*;
+import pose_graph_experiments.*;
 import odometry_model_answer.*;
 
 % Number of steps per episode

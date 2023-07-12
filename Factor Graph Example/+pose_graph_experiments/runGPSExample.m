@@ -1,5 +1,7 @@
 function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4)
     import g2o.core.*;
+    import g2o.stuff.*;
+    import pose_graph_experiments.*;
     import odometry_model_answer.*;
     
     % Nominal odometry
