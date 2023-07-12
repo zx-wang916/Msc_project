@@ -90,6 +90,31 @@ end
 %delete(gcp('nocreate')); % stop the parallel pool
 
 %%
+os = "mac";
+weekNum = 1;
+
+if os == "mac"
+    basePath = "~/Desktop/week" + weekNum + "/";
+else
+    basePath = "D:\project/week" + weekNum + "/";
+end
+
+C_name = "C_gps";
+Mean_name = "meanChi2_gps";
+Cov_name = "covChi2_gps";
+
+if obsPeriod ~= 1
+    C_name = C_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
+    Mean_name = Mean_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
+    Cov_name = Cov_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
+end
+
+if testProposition4 == true
+    C_name = C_name + "_prop4";
+    Mean_name = Mean_name + "_prop4";
+    Cov_name = Cov_name + "_prop4";
+end
+
 % Plotting
 figure(1)
 imagesc(omegaRScaleArray, omegaQScaleArray, C_store);
@@ -98,8 +123,8 @@ xlabel('omegaRScale');
 ylabel('omegaQScale');
 title('Consistency Measurement (C) for different Omega values');
 axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-saveas(gcf, "~/Desktop/week9/C_measure_rate_20-2_prop4.png")
-writematrix(C_store, '~/Desktop/week9/C_measure_rate_20-2_prop4.csv')
+saveas(gcf, basePath + C_name + ".png")
+writematrix(C_store, basePath + C_name + '.csv')
 
 % Plot the meanChi2 and covChi2 values
 figure(2)
@@ -109,8 +134,8 @@ xlabel('omegaRScale');
 ylabel('omegaQScale');
 title('Mean Chi2 for different Omega values');
 axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-saveas(gcf, "~/Desktop/week9/meanChi2_measure_rate_20-2_prop4.png")
-writematrix(meanChi2_store, '~/Desktop/week9/meanChi2_measure_rate_20-2_prop4.csv')
+saveas(gcf, basePath + Mean_name + ".png")
+writematrix(meanChi2_store, basePath + Mean_name + '.csv')
 
 % Plot the meanChi2 and covChi2 values
 figure(3)
@@ -120,5 +145,5 @@ xlabel('omegaRScale');
 ylabel('omegaQScale');
 title('Covariance Chi2 for different Omega values');
 axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-saveas(gcf, "~/Desktop/week9/covChi2_measure_rate_20-2_prop4.png")
-writematrix(covChi2_store, '~/Desktop/week9/covChi2_measure_rate_20-2_prop4.csv')
+saveas(gcf, basePath + Cov_name + ".png")
+writematrix(covChi2_store, basePath + Cov_name + '.csv')

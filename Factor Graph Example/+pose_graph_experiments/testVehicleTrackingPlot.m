@@ -7,7 +7,7 @@ import pose_graph_experiments.*;
 import odometry_model_answer.*;
 
 % Number of steps per episode
-numberOfTimeSteps = 10;
+numberOfTimeSteps = 20;
 
 % Number of episodes
 numberOfEpisodes = 100;
@@ -16,11 +16,18 @@ numberOfEpisodes = 100;
 % ground truth value, and does not optimize. If set to true, we test
 % proposition 4, which is the distribution after optimizing with noisy
 % measurements
-testProposition4 = true;
+testProposition4 = false;
 
 % Parameters to change the frequency of measurement updates
 numObs = 100;
 obsPeriod = 1;
+
+% Number of landmarks and layout
+numberOfLandmarks = 200;
+extent = 300;
+
+% Populate the landmark locations
+landmarks = (rand([2 numberOfLandmarks]) - 0.5) * extent;
 
 % Define the range and step for Omega scales
 omegaRScaleArray = 0.1:0.1:1.9;
@@ -35,17 +42,14 @@ C_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
 meanChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
 covChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
 
-% Compute the number of edges
-numberOfEdges = 2 * numObs - 1 + ...
-    floor((numberOfTimeSteps - numObs) / obsPeriod) + ...
-    numberOfTimeSteps - numObs;
-
 % Loop over all possible Omega values
 parfor i = 1:numel(RM)
         
     % Initialize chi2Store for each episode
-    chi2Store = zeros(numberOfEpisodes, numberOfEdges);
     chi2SumStore = zeros(numberOfEpisodes, 1);
+    dimXStore = zeros(numberOfEpisodes, 1);
+    dimZStore = zeros(numberOfEpisodes, 1);
+
 %     edgeStore = cell(numberOfEpisodes, 1);
 
     % Get chi2Sum and chi2 values, along with the edges in graph for each
@@ -53,16 +57,14 @@ parfor i = 1:numel(RM)
     fprintf('OmegaRScale: %.2f, OmegaQScale: %.2f\n', ...
         RM(i), QM(i))
 
-    % First run retrieves the graph dimensions
-    [chi2SumStore(1), chi2Store(1, :), ~, dimX, dimZ] = ...
-        runGPSExample(numberOfTimeSteps, ...
-        RM(i), QM(i), testProposition4);
-
-    for r = 2 : numberOfEpisodes
-        [chi2SumStore(r), chi2Store(r, :)] = ...
-            runGPSExample(numberOfTimeSteps, ...
-            RM(i), QM(i), testProposition4);
+    for r = 1 : numberOfEpisodes
+        [chi2SumStore(r), ~, ~, dimXStore(r), dimZStore(r)] = ...
+            runVehicleTrackingExample(numberOfTimeSteps, ...
+            RM(i), QM(i), testProposition4, landmarks);
     end
+
+    dimX = mean(dimXStore);
+    dimZ = mean(dimZStore);
 
     % Calculate meanChi2, covChi2
     meanChi2 = mean(chi2SumStore);
@@ -85,7 +87,7 @@ end
 
 %%
 os = "mac";
-weekNum = 1;
+weekNum = 10;
 
 if os == "mac"
     basePath = "~/Desktop/week" + weekNum + "/";
@@ -93,22 +95,15 @@ else
     basePath = "D:\project/week" + weekNum + "/";
 end
 
-C_name = "C_gps";
-Mean_name = "meanChi2_gps";
-Cov_name = "covChi2_gps";
-
-if obsPeriod ~= 1
-    C_name = C_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
-    Mean_name = Mean_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
-    Cov_name = Cov_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
-end
+C_name = "C_vehicle";
+Mean_name = "meanChi2_vehicle";
+Cov_name = "covChi2_vehicle";
 
 if testProposition4 == true
     C_name = C_name + "_prop4";
     Mean_name = Mean_name + "_prop4";
     Cov_name = Cov_name + "_prop4";
 end
-
 
 % Plotting
 figure(1)
