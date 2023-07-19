@@ -86,18 +86,30 @@ end
 %delete(gcp('nocreate')); % stop the parallel pool
 
 %%
-os = "mac";
-weekNum = 10;
+% Parameters to determine path to store
+os = "win";
+weekNum = 1;
+systemName = "vehicle";
 
+% Path to store plots
 if os == "mac"
     basePath = "~/Desktop/week" + weekNum + "/";
 else
-    basePath = "D:\project/week" + weekNum + "/";
+    basePath = "D:\University\UCL\project\week" + weekNum + "\";
 end
 
-C_name = "C_vehicle";
-Mean_name = "meanChi2_vehicle";
-Cov_name = "covChi2_vehicle";
+% Create folder if not exist and display log
+if ~exist(basePath, 'dir')
+    mkdir(basePath);
+    disp('Folder created successfully.');
+else
+    disp('Folder already exists.');
+end
+
+% Build the file names
+C_name = "C_" + systemName;
+Mean_name = "meanChi2_" + systemName;
+Cov_name = "covChi2_" + systemName;
 
 if testProposition4 == true
     C_name = C_name + "_prop4";

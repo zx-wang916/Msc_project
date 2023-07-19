@@ -21,7 +21,7 @@ testProposition4 = true;
 
 % Parameters to change the frequency of measurement updates
 numObs = 20;
-obsPeriod = 2;
+obsPeriod = 10;
 
 % Define the range and step for Omega scales
 omegaRScaleArray = 0.1:0.1:1.9;
@@ -90,18 +90,30 @@ end
 %delete(gcp('nocreate')); % stop the parallel pool
 
 %%
-os = "mac";
-weekNum = 1;
+% Parameters to determine path to store
+os = "win";
+weekNum = 10;
+system_name = "linear";
 
+% Path to store plots
 if os == "mac"
     basePath = "~/Desktop/week" + weekNum + "/";
 else
-    basePath = "D:\project/week" + weekNum + "/";
+    basePath = "D:\University\UCL\project\week" + weekNum + "\";
 end
 
-C_name = "C_gps";
-Mean_name = "meanChi2_gps";
-Cov_name = "covChi2_gps";
+% Create folder if not exist and display log
+if ~exist(basePath, 'dir')
+    mkdir(basePath);
+    disp('Folder created successfully.');
+else
+    disp('Folder already exists.');
+end
+
+% Build the file names
+C_name = "C_" + system_name;
+Mean_name = "meanChi2_" + system_name;
+Cov_name = "covChi2_" + system_name;
 
 if obsPeriod ~= 1
     C_name = C_name + "_measurement_rate_" + numObs + "-" + obsPeriod;

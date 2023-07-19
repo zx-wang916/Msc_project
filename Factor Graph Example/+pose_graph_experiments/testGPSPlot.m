@@ -7,10 +7,10 @@ import pose_graph_experiments.*;
 import odometry_model_answer.*;
 
 % Number of steps per episode
-numberOfTimeSteps = 10;
+numberOfTimeSteps = 40;
 
 % Number of episodes
-numberOfEpisodes = 100;
+numberOfEpisodes = 10000;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
@@ -84,18 +84,30 @@ end
 %delete(gcp('nocreate')); % stop the parallel pool
 
 %%
-os = "mac";
-weekNum = 1;
+% Parameters to determine path to store
+os = "win";
+weekNum = 10;
+system_name = "gps";
 
+% Path to store plots
 if os == "mac"
     basePath = "~/Desktop/week" + weekNum + "/";
 else
-    basePath = "D:\project/week" + weekNum + "/";
+    basePath = "D:\University\UCL\project\week" + weekNum + "\";
 end
 
-C_name = "C_gps";
-Mean_name = "meanChi2_gps";
-Cov_name = "covChi2_gps";
+% Create folder if not exist and display log
+if ~exist(basePath, 'dir')
+    mkdir(basePath);
+    disp('Folder created successfully.');
+else
+    disp('Folder already exists.');
+end
+
+% Build the file names
+C_name = "C_vehicle";
+Mean_name = "meanChi2_vehicle";
+Cov_name = "covChi2_vehicle";
 
 if obsPeriod ~= 1
     C_name = C_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
