@@ -8,9 +8,9 @@ import two_d_tracking_model_answer.*;
 
 % Parameters for plotting
 os = "win";
-weekNum = 10;
+weekNum = 11;
 system_name = "linear";
-saveResults = false;
+saveResults = true;
 
 % Number of steps per episode
 numberOfTimeSteps = 100;
@@ -25,8 +25,11 @@ numberOfEpisodes = 1000;
 testProposition4 = true;
 
 % Parameters to change the frequency of measurement updates
-numObs = 20;
-obsPeriod = 10;
+numObs = 100;
+obsPeriod = 1;
+
+% Number of subgraphs
+numSubgraph = 2;
 
 % Define the range and step for Omega scales
 omegaRScaleArray = 0.1:0.1:1.9;
@@ -35,27 +38,33 @@ omegaQScaleArray = 0.1:0.1:1.9;
 [RM, QM] = meshgrid(omegaRScaleArray, omegaQScaleArray);
 
 % Create a matrix to store C values
-C_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
+C_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray), numSubgraph);
 
 % Create matrices to store meanChi2 and covChi2 values
-meanChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
-covChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray));
-
-% Start a parallel pool
-%parpool;
+meanChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray), numSubgraph);
+covChi2_store = zeros(length(omegaRScaleArray), length(omegaQScaleArray), numSubgraph);
 
 % Compute the number of edges
 numberOfEdges = 2 * numObs - 1 + ...
     floor((numberOfTimeSteps - numObs) / obsPeriod) + ...
     numberOfTimeSteps - numObs;
 
+% Create temporary variables to store results for each iteration
+tempC_store = cell(numel(RM), 1);
+tempMeanChi2_store = cell(numel(RM), 1);
+tempCovChi2_store = cell(numel(RM), 1);
+
 % Loop over all possible Omega values
 parfor i = 1:numel(RM)
         
     % Initialize chi2Store for each episode
-    chi2Store = zeros(numberOfEpisodes, numberOfEdges);
-    chi2SumStore = zeros(numberOfEpisodes, 1);
-%     edgeStore = cell(numberOfEpisodes, 1);
+    if numSubgraph == 1
+        chi2Store = zeros(numberOfEpisodes, numberOfEdges);
+        chi2SumStore = zeros(numberOfEpisodes, 1);
+    else
+        chi2Store = zeros(numberOfEpisodes, numSubgraph);
+        chi2SumStore = zeros(numSubgraph, 1);
+    end
 
     % Get chi2Sum and chi2 values, along with the edges in graph for each
     % running episode
@@ -66,18 +75,14 @@ parfor i = 1:numel(RM)
     [chi2SumStore(1), chi2Store(1, :), ~, dimX, dimZ] = ...
         runLinearExample(numberOfTimeSteps, ...
         RM(i), QM(i), testProposition4, ...
-        numObs, obsPeriod);
+        numObs, obsPeriod, numSubgraph);
 
     for r = 2 : numberOfEpisodes
         [chi2SumStore(r), chi2Store(r, :)] = ...
             runLinearExample(numberOfTimeSteps, ...
             RM(i), QM(i), testProposition4, ...
-            numObs, obsPeriod);
+            numObs, obsPeriod, numSubgraph);
     end
-
-    % Calculate meanChi2, covChi2
-    meanChi2 = mean(chi2SumStore);
-    covChi2 = cov(chi2SumStore);
 
     % Compute the number of degrees of freedom
     if (testProposition4 == true)
@@ -85,18 +90,39 @@ parfor i = 1:numel(RM)
     else
         N = dimZ;
     end
+    
+    % Convert linear index to matrix indices
+    [idxR, idxQ] = ind2sub(size(RM), i);
 
-    % Store C, meanChi2, and covChi2 in matrices
-    C_store(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
-    meanChi2_store(i) = meanChi2;
-    covChi2_store(i) = covChi2;
+    % Store C, meanChi2, and covChi2 in matrices for each subgraph
+    tempC_store{i} = zeros(1, 1, numSubgraph);
+    tempMeanChi2_store{i} = zeros(1, 1, numSubgraph);
+    tempCovChi2_store{i} = zeros(1, 1, numSubgraph);
+    for j = 1:numSubgraph
+        % Calculate meanChi2, covChi2
+        meanChi2 = mean(chi2Store(:, j));
+        covChi2 = cov(chi2Store(:, j));
+
+        % Store C, meanChi2, and covChi2 in matrices
+        tempC_store{i}(1, 1, j) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
+        tempMeanChi2_store{i}(1, 1, j) = meanChi2;
+        tempCovChi2_store{i}(1, 1, j) = covChi2;
+    end
 end
 
-%delete(gcp('nocreate')); % stop the parallel pool
+% Update 3D matrices after the parfor loop
+for i = 1:numel(RM)
+    [idxR, idxQ] = ind2sub(size(RM), i);
+    C_store(idxR, idxQ, :) = tempC_store{i};
+    meanChi2_store(idxR, idxQ, :) = tempMeanChi2_store{i};
+    covChi2_store(idxR, idxQ, :) = tempCovChi2_store{i};
+end
 
+%%
+% Display results
 % Plotting
 chi2Plotting(saveResults, testProposition4, os, weekNum, system_name,...
     C_store, meanChi2_store, covChi2_store, ...
     numberOfTimeSteps, omegaRScaleArray, omegaQScaleArray, ...
-    numObs, obsPeriod);
+    numObs, obsPeriod, numSubgraph);
 

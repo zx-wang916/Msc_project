@@ -2,6 +2,8 @@ close all;
 clear all;
 clc;
 
+
+
 % Number of steps per episode
 numberOfTimeSteps = 20;
 
@@ -27,6 +29,10 @@ disp(results.XAtMinObjective);
 % Define the target function, which takes omegaRScale and omegaQScale values, and returns the calculated C value.
 % Assume runGPSExample and other necessary functions have been defined and return the required values for computing C.
 function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4)
+    import g2o.core.*;
+    import pose_graph_experiments.*;
+    import odometry_model_answer.*;
+    
     % Extract the variables
     omegaRScale = x.omegaRScale;
     omegaQScale = x.omegaQScale;
