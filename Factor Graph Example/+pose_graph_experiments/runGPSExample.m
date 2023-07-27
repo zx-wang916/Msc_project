@@ -1,4 +1,4 @@
-function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4)
+function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4, R, Q)
     import g2o.core.*;
     import g2o.stuff.*;
     import pose_graph_experiments.*;
@@ -7,12 +7,16 @@ function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, 
     % Nominal odometry
     odometry=[1 0 pi/180]';
     
-    % GPS measurement covariance
-    R = eye(2);
-    
-    % Odometry covariance
-    Q = diag([0.1 0.05 pi/180].^2);
-    
+    if nargin < 5  % If R and Q are not passed as parameters
+        % GPS measurement covariance
+        R = eye(2);
+        % Odometry covariance
+        Q = diag([0.1 0.05 pi/180].^2);
+    else  % If R and Q are passed as parameters
+        omegaRScale = 1;
+        omegaQScale = 1;
+    end
+
     % Work out the information matrices
     omegaR = omegaRScale * inv(R);
     omegaQ = omegaQScale * inv(Q);

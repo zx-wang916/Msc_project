@@ -22,7 +22,7 @@ numberOfEpisodes = 1000;
 % ground truth value, and does not optimize. If set to true, we test
 % proposition 4, which is the distribution after optimizing with noisy
 % measurements
-testProposition4 = true;
+testProposition4 = false;
 
 % Parameters to change the frequency of measurement updates
 numObs = 100;

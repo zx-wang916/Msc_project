@@ -21,7 +21,7 @@ numObs = 100;
 obsPeriod = 1;
 
 % Number of subgraphs
-numSubgraph = 4;
+numSubgraph = 2;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
