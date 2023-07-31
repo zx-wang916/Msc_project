@@ -5,7 +5,7 @@ clc;
 import pose_graph_experiments.*;
 
 % Parameters
-numberOfEpisodes = 500;
+numberOfEpisodes = 10;
 omegaRScale = 1; % GPS
 omegaQScale = 1; % odemetry
 

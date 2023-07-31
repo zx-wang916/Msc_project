@@ -2,8 +2,6 @@ close all;
 clear all;
 clc;
 
-
-
 % Number of steps per episode
 numberOfTimeSteps = 20;
 
@@ -40,7 +38,7 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
     % Add the code for computing the C value here. For example:
     chi2SumStore = zeros(numberOfEpisodes, 1);
     [chi2SumStore(1), ~, ~, dimX, dimZ] = runGPSExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4);
-    for r = 2 : numberOfEpisodes
+    parfor r = 2 : numberOfEpisodes
         [chi2SumStore(r), ~] = runGPSExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4);
     end
     meanChi2 = mean(chi2SumStore);

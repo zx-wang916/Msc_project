@@ -21,7 +21,7 @@ numObs = 100;
 obsPeriod = 1;
 
 % Number of subgraphs
-numSubgraph = 2;
+numSubgraph = 4;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
@@ -48,17 +48,15 @@ end
 % First run retrieves the graph dimensions
 [chi2SumStore(1), chi2Store(1, :), ~, dimX, dimZ] = ...
     runLinearExample(numberOfTimeSteps, ...
-    omegaRScale, omegaQScale, testProposition4,...
+    omegaRScale, omegaQScale, testProposition4, ...
     numObs, obsPeriod, numSubgraph);
 
 parfor r = 2 : numberOfEpisodes
     fprintf('%03d\n', r)
     [chi2SumStore(r), chi2Store(r, :)] = ...
         runLinearExample(numberOfTimeSteps, ...
-        omegaRScale, omegaQScale, testProposition4,...
+        omegaRScale, omegaQScale, testProposition4, ...
         numObs, obsPeriod, numSubgraph);
-    % Store the edges in a cell array
-%     edgeStore{r} = edges;
 end
 
 

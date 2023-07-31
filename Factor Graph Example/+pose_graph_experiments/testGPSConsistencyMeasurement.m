@@ -7,10 +7,10 @@ import pose_graph_experiments.*;
 import odometry_model_answer.*;
 
 % Number of steps per episode
-numberOfTimeSteps = 20;
+numberOfTimeSteps = 40;
 
 % Number of episodes
-numberOfEpisodes = 2000;
+numberOfEpisodes = 10000;
 
 % Omega Scales
 omegaRScale = 1;
@@ -26,17 +26,22 @@ chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
 chi2SumStore = zeros(numberOfEpisodes, 1);
 % edgeStore = cell(numberOfEpisodes, 1);
 
+R = diag([1.6148 1.7197]);
+Q = diag([0.22683 0.11764 0.01808] .^2);
+
 % First run retrieves the graph dimensions
 [chi2SumStore(1), chi2Store(1, :), edges, dimX, dimZ] = ...
     runGPSExample(numberOfTimeSteps, ...
-    omegaRScale, omegaQScale, testProposition4);
+    omegaRScale, omegaQScale, testProposition4, ...
+    R, Q);
 
 % Get chi2Sum and chi2 values,
 parfor r = 2 : numberOfEpisodes
     fprintf('%03d\n', r)
     [chi2SumStore(r), chi2Store(r, :)] = ...
         runGPSExample(numberOfTimeSteps, ...
-        omegaRScale, omegaQScale, testProposition4);
+        omegaRScale, omegaQScale, testProposition4, ...
+        R, Q);
 end
 
 % Compute the number of degrees of freedom

@@ -1,6 +1,6 @@
 function [chi2, chi2List, edges, dimX, dimZ] = ...
     runLinearExample(numberOfTimeSteps, omegaRScale, omegaQScale, ...
-    testProposition4, numObs, obsPeriod, numSubgraph)
+    testProposition4, numObs, obsPeriod, numSubgraph, R, Q)
 
     import g2o.core.*;
     import pose_graph_experiments.*;
@@ -27,8 +27,16 @@ function [chi2, chi2List, edges, dimX, dimZ] = ...
     Q0=[dT^3/3 dT^2/2;dT^2/2 dT] * sigmaQ;
     
     F = [F0 zeros(2); zeros(2) F0];
-    Q = [Q0 zeros(2); zeros(2) Q0];
-    R = eye(2) * sigmaR;
+    
+    % If Q is not provided, use default
+    if nargin < 9
+        Q = [Q0 zeros(2); zeros(2) Q0];
+    end
+    
+    % If R is not provided, use default
+    if nargin < 8
+        R = eye(2) * sigmaR;
+    end
     
     H = [1 0 0 0;
         0 0 1 0];

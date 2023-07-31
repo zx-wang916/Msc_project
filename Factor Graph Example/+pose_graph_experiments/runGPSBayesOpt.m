@@ -4,21 +4,22 @@ clc;
 
 % Parameters for plotting
 os = "win";
-weekNum = 11;
+weekNum = 12;
 system_name = "gps";
-saveResults = true;
+saveResults = false;
 
 % Number of steps per episode
-numberOfTimeSteps = 40;
+numberOfTimeSteps = 20;
 
 % Number of episodes
-numberOfEpisodes = 10000;
-
+numberOfEpisodes = 2000;
+    
 % If set to false, we test proposition 3, which initialises the graph at the
 % ground truth value, and does not optimise. If set to true, we test
 % proposition 4, which is the distribution after optimising with noisy
 % measurements
 testProposition4 = true;
+
 
 % Define the search space for R and Q values
 variables = [optimizableVariable('R11', [0.1, 1.9]);
@@ -27,11 +28,16 @@ variables = [optimizableVariable('R11', [0.1, 1.9]);
              optimizableVariable('Q22', [0.01, 0.5]);
              optimizableVariable('Q33', [0.001, 0.05])];
 
-% Perform Bayesian optimisation
-results = bayesopt(@(x) targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4), variables);
+acquisitionFuncs = {'expected-improvement-per-second-plus', ...
+    'expected-improvement', 'expected-improvement-plus', ...
+    'expected-improvement-per-second', 'lower-confidence-bound', ...
+    'probability-of-improvement'};
 
-% Output the optimal R and Q values
-disp(results.XAtMinObjective);
+acquisitionFunc = acquisitionFuncs{1};
+
+% Perform Bayesian optimisation
+results = bayesopt(@(x) targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4), variables, ...
+    'AcquisitionFunctionName', acquisitionFunc);
 
 % Path to store results
 if os == "mac"
@@ -54,7 +60,7 @@ else
     prop = "";
 end
 
-fileName = system_name + "results" + prop + ".mat";
+fileName = system_name + "_results_" + num2str(numberOfTimeSteps) + "-" + num2str(numberOfEpisodes) + "_" + acquisitionFunc + prop + ".mat";
 if saveResults == true
     save(basePath + fileName, 'results');
 end
@@ -80,7 +86,7 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
     % Add the code for computing the C value here. For example:
     chi2SumStore = zeros(numberOfEpisodes, 1);
     [chi2SumStore(1), ~, ~, dimX, dimZ] = runGPSExample(numberOfTimeSteps, 1, 1, testProposition4, R, Q);
-    for r = 2 : numberOfEpisodes
+    parfor r = 2 : numberOfEpisodes
         [chi2SumStore(r), ~] = runGPSExample(numberOfTimeSteps, 1, 1, testProposition4, R, Q);
     end
     meanChi2 = mean(chi2SumStore);
