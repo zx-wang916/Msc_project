@@ -3,16 +3,16 @@ clear all;
 clc;
 
 % Number of steps per episode
-numberOfTimeSteps = 20;
+numberOfTimeSteps = 40;
 
 % Number of episodes
-numberOfEpisodes = 2000;
+numberOfEpisodes = 10000;
 
 % If set to false, we test proposition 3, which initialises the graph at the
 % ground truth value, and does not optimise. If set to true, we test
 % proposition 4, which is the distribution after optimising with noisy
 % measurements
-testProposition4 = false;
+testProposition4 = true;
 
 % Define the search space for Omega values
 variables = [optimizableVariable('omegaRScale', [0.1, 1.9]);

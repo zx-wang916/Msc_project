@@ -6,7 +6,7 @@ clc;
 os = "win";
 weekNum = 12;
 system_name = "linear";
-saveResults = false;
+saveResults = true;
 
 % Number of steps per episode
 numberOfTimeSteps = 100;
@@ -31,16 +31,25 @@ numSubgraph = 1;
 variables = [optimizableVariable('omegaRScale', [0.1, 1.9]);
              optimizableVariable('omegaQScale', [0.1, 1.9])];
 
+% variables = [optimizableVariable('r11', [0.1, 10]);
+%              optimizableVariable('r22', [0.1, 10]);
+%              optimizableVariable('q0_11', [0.1, 1]);
+%              optimizableVariable('q0_12', [0.1, 1]);
+%              optimizableVariable('q0_21', [0.1, 1]);
+%              optimizableVariable('q0_22', [0.1, 1]);];
+
+
 acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement', 'expected-improvement-plus', ...
     'expected-improvement-per-second', 'lower-confidence-bound', ...
     'probability-of-improvement'};
 
-acquisitionFunc = acquisitionFuncs{1};
+acquisitionFunc = acquisitionFuncs{3};
+maxObjectiveEvaluations = 100;
 
 % Perform Bayesian optimisation
 results = bayesopt(@(x) targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4, numObs, obsPeriod, numSubgraph), variables, ...
-    'AcquisitionFunctionName', acquisitionFunc);
+    'AcquisitionFunctionName', acquisitionFunc, 'MaxObjectiveEvaluations', maxObjectiveEvaluations);
 
 % Path to store results
 if os == "mac"
@@ -63,7 +72,11 @@ else
     prop = "";
 end
 
-fileName = system_name + "_results_" + num2str(numberOfTimeSteps) + "-" + num2str(numberOfEpisodes) + "_" + acquisitionFunc + prop + ".mat";
+fileName = system_name + "_results_" + ...
+    num2str(numberOfTimeSteps) + "-" + num2str(numberOfEpisodes) + ...
+    "_" + acquisitionFunc + ...
+    "_eval_" + maxObjectiveEvaluations + ...
+    prop + ".mat";
 if saveResults == true
     save(basePath + fileName, 'results');
 end
@@ -77,6 +90,19 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
     % Extract the variables
     omegaRScale = x.omegaRScale;
     omegaQScale = x.omegaQScale;
+%     r11 = x.r11;
+%     r22 = x.r22;
+%     q0_11 = x.q0_11 * 1/3;
+%     q0_12 = x.q0_12 * 1/2;
+%     q0_21 = x.q0_21 * 1/2;
+%     q0_22 = x.q0_22 * 1;
+%     Q0 = [q0_11 q0_12; q0_21 q0_22];
+%     omegaRScale = 1;
+%     omegaQScale = 1;
+% 
+%     % Redefine R and Q with new diagonal elements 
+%     R = [r11 0; 0 r22];
+%     Q = [Q0 zeros(2); zeros(2) Q0];
 
     % Compute the number of edges
     numberOfEdges = 2 * numObs - 1 + ...

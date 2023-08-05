@@ -9,17 +9,16 @@ system_name = "gps";
 saveResults = false;
 
 % Number of steps per episode
-numberOfTimeSteps = 20;
+numberOfTimeSteps = 40;
 
 % Number of episodes
-numberOfEpisodes = 2000;
+numberOfEpisodes = 10000;
     
 % If set to false, we test proposition 3, which initialises the graph at the
 % ground truth value, and does not optimise. If set to true, we test
 % proposition 4, which is the distribution after optimising with noisy
 % measurements
 testProposition4 = true;
-
 
 % Define the search space for R and Q values
 variables = [optimizableVariable('R11', [0.1, 1.9]);
@@ -33,11 +32,12 @@ acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement-per-second', 'lower-confidence-bound', ...
     'probability-of-improvement'};
 
-acquisitionFunc = acquisitionFuncs{1};
+acquisitionFunc = acquisitionFuncs{3};
+maxObjectiveEvaluations = 30;
 
 % Perform Bayesian optimisation
 results = bayesopt(@(x) targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4), variables, ...
-    'AcquisitionFunctionName', acquisitionFunc);
+    'AcquisitionFunctionName', acquisitionFunc, 'MaxObjectiveEvaluations', maxObjectiveEvaluations);
 
 % Path to store results
 if os == "mac"
@@ -60,7 +60,11 @@ else
     prop = "";
 end
 
-fileName = system_name + "_results_" + num2str(numberOfTimeSteps) + "-" + num2str(numberOfEpisodes) + "_" + acquisitionFunc + prop + ".mat";
+fileName = system_name + "_results_" + ...
+    num2str(numberOfTimeSteps) + "-" + num2str(numberOfEpisodes) + ...
+    "_" + acquisitionFunc + ...
+    "_eval_" + maxObjectiveEvaluations + ...
+    prop + ".mat";
 if saveResults == true
     save(basePath + fileName, 'results');
 end
