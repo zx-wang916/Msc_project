@@ -1,4 +1,4 @@
-function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4, R, Q)
+function [chi2, chi2List, Px, dimX, dimZ] = runGPSExample(numberOfTimeSteps, omegaRScale, omegaQScale, testProposition4, R, Q)
     import g2o.core.*;
     import g2o.stuff.*;
     import pose_graph_experiments.*;
@@ -133,6 +133,9 @@ function [chi2, chi2List, edges, dimX, dimZ] = runGPSExample(numberOfTimeSteps, 
         edges = graph.edges();
         vertices = graph.vertices();
 
+        % Get the covariance of vertices
+        [~, Px] = graph.computeMarginals();
+        
         for e = 1 : length(edges)
             dimZ = dimZ + edges{e}.dimension();
         end

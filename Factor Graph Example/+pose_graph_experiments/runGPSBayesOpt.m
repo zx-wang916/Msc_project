@@ -4,15 +4,15 @@ clc;
 
 % Parameters for plotting
 os = "win";
-weekNum = 12;
+weekNum = 13;
 system_name = "gps";
 saveResults = false;
 
 % Number of steps per episode
-numberOfTimeSteps = 40;
+numberOfTimeSteps = 20;
 
 % Number of episodes
-numberOfEpisodes = 10000;
+numberOfEpisodes = 2000;
     
 % If set to false, we test proposition 3, which initialises the graph at the
 % ground truth value, and does not optimise. If set to true, we test
@@ -21,9 +21,17 @@ numberOfEpisodes = 10000;
 testProposition4 = true;
 
 % Define the search space for R and Q values
-variables = [optimizableVariable('R11', [0.1, 1.9]);
-             optimizableVariable('R22', [0.1, 1.9]);
-             optimizableVariable('Q11', [0.01, 0.5]);
+% variables = [optimizableVariable('R11', [0.1, 1.9]);
+%              optimizableVariable('R22', [0.1, 1.9]);
+%              optimizableVariable('Q11', [0.01, 0.5]);
+%              optimizableVariable('Q22', [0.01, 0.5]);
+%              optimizableVariable('Q33', [0.001, 0.05])];
+
+% variables = [optimizableVariable('R11', [0.1, 1.9]);
+%              optimizableVariable('R22', [0.1, 1.9])
+%             ];
+
+variables = [optimizableVariable('Q11', [0.01, 0.5]);
              optimizableVariable('Q22', [0.01, 0.5]);
              optimizableVariable('Q33', [0.001, 0.05])];
 
@@ -33,7 +41,7 @@ acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'probability-of-improvement'};
 
 acquisitionFunc = acquisitionFuncs{3};
-maxObjectiveEvaluations = 30;
+maxObjectiveEvaluations = 100;
 
 % Perform Bayesian optimisation
 results = bayesopt(@(x) targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4), variables, ...
@@ -77,15 +85,17 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
     import odometry_model_answer.*;
     
     % Extract the variables
-    R11 = x.R11;
-    R22 = x.R22;
+%     R11 = x.R11;
+%     R22 = x.R22;
     Q11 = x.Q11;
     Q22 = x.Q22;
     Q33 = x.Q33;
 
     % Construct R and Q matrices
-    R = diag([R11, R22]);
+    R = eye(2);
+%     R = diag([R11, R22]);
     Q = diag([Q11, Q22, Q33].^2) ;
+%     Q = diag([0.1 0.05 pi/180].^2);
 
     % Add the code for computing the C value here. For example:
     chi2SumStore = zeros(numberOfEpisodes, 1);

@@ -7,7 +7,7 @@ import pose_graph_experiments.*;
 import two_d_tracking_model_answer.*;
 
 % Number of steps per episode
-numberOfTimeSteps = 100;
+numberOfTimeSteps = 200;
 
 % Number of episodes
 numberOfEpisodes = 1000;
@@ -16,12 +16,26 @@ numberOfEpisodes = 1000;
 omegaRScale = 1;
 omegaQScale = 1;
 
+% omegaRScale = 1;
+% omegaQScale = 1;
+
+% omegaRScale = 1.1141;
+% omegaQScale = 0.84068;
+
+
 % Parameters to change the frequency of measurement updates
-numObs = 100;
-obsPeriod = 1;
+numObs = 50;
+obsPeriod = [10 20];
+% obsPeriod = 5;
 
 % Number of subgraphs
-numSubgraph = 1;
+numSubgraph = 2;
+
+% if (omegaQScale ~= 1 || omegaRScale ~= 1)
+%     cov_gt = load("D:\University\UCL\project\week13\cov_gt_" + ...
+%         num2str(numObs) + '_' + num2str(obsPeriod) ...
+%         + '.csv');
+% end
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
@@ -29,12 +43,11 @@ numSubgraph = 1;
 % measurements
 testProposition4 = true;
 
-% Compute the number of edges
-numberOfEdges = 2 * numObs - 1 + ...
-    floor((numberOfTimeSteps - numObs) / obsPeriod) + ...
-    numberOfTimeSteps - numObs;
-
 if numSubgraph == 1
+    % Compute the number of edges
+    numberOfEdges = 2 * numObs - 1 + ...
+        floor((numberOfTimeSteps - numObs) / obsPeriod) + ...
+        numberOfTimeSteps - numObs;
     chi2Store = zeros(numberOfEpisodes, numberOfEdges);
     chi2SumStore = zeros(numberOfEpisodes, 1);
 else
@@ -46,7 +59,7 @@ end
 % running episode
 
 % First run retrieves the graph dimensions
-[chi2SumStore(1), chi2Store(1, :), ~, dimX, dimZ] = ...
+[chi2SumStore(1), chi2Store(1, :), Px, dimX, dimZ] = ...
     runLinearExample(numberOfTimeSteps, ...
     omegaRScale, omegaQScale, testProposition4, ...
     numObs, obsPeriod, numSubgraph);
@@ -59,26 +72,14 @@ parfor r = 2 : numberOfEpisodes
         numObs, obsPeriod, numSubgraph);
 end
 
-
-% Compute the number of degrees of freedom
-if (testProposition4 == true)
-    N = dimZ - dimX;
-else
-    N = dimZ;
-end
-
-% TimestepMean calculates the average chi2 value for a specific edge in the
-% graph for all run. Not the average chi2 for all edges in the graph in a
-% single run. 
-% timestepMean = mean(chi2Store,1);
-
-% Compute S
-% difference = chi2Store - timestepMean;
-% squaredDifference = difference .^ 2;
-% totalSum = sum(squaredDifference(:));
-% S = totalSum / (numberOfTimeSteps * (numberOfEpisodes - 1));
-
 if numSubgraph == 1
+    % Compute the number of degrees of freedom
+    if (testProposition4 == true)
+        N = dimZ - dimX;
+    else
+        N = dimZ;
+    end
+
     % This figure works out and plots the mean and covarianace for the sum of
     % the chi2 values over all edges. Propositions 3 and 4 are guaranteed to
     % apply to ONLY these values.
@@ -87,6 +88,16 @@ if numSubgraph == 1
     meanChi2 = mean(chi2SumStore);
     covChi2 = cov(chi2SumStore);
     title(sprintf('Mean: %f; Covariance %f', meanChi2, covChi2))
+    
+%     Px = full(Px{1});
+%     if (omegaQScale == 1 && omegaRScale == 1)
+%         writematrix(Px, "D:\University\UCL\project\week13\cov_gt_" + ...
+%             num2str(numObs) + '_' + num2str(obsPeriod) ...
+%             + '.csv')
+%     end
+
+%     diff = Px - cov_gt;
+%     FrobeniusNorm = norm(diff, 'fro');
     
     % Compute the Consistency Measurement
     C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
@@ -100,6 +111,13 @@ else
         covChi2 = cov(chi2Store(:, i));
         title(sprintf('Subgraph: %d, Mean: %f; Covariance %f', i, meanChi2, covChi2))
     
+        % Compute the number of degrees of freedom
+        if (testProposition4 == true)
+            N = dimZ(i) - dimX(i);
+        else
+            N = dimZ(i);
+        end
+
         % Compute the Consistency Measurement for each subgraph
         C(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
     end

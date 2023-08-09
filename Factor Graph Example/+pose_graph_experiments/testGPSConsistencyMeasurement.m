@@ -7,14 +7,20 @@ import pose_graph_experiments.*;
 import odometry_model_answer.*;
 
 % Number of steps per episode
-numberOfTimeSteps = 40;
+numberOfTimeSteps = 20;
 
 % Number of episodes
-numberOfEpisodes = 10000;
+numberOfEpisodes = 2000;
 
 % Omega Scales
-omegaRScale = 1;
-omegaQScale = 1;
+% omegaRScale = 1;
+% omegaQScale = 1;
+
+omegaRScale = 0.1;
+omegaQScale = 0.1; % 17.9590
+
+% omegaRScale = 1.0215;
+% omegaQScale = 0.62648;
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
@@ -22,26 +28,36 @@ omegaQScale = 1;
 % measurements
 testProposition4 = true;
 
+if (omegaQScale ~= 1 || omegaRScale ~= 1)
+    cov_gt = load("D:\University\UCL\project\week13\cov_gt_gps_" + ...
+        num2str(numberOfTimeSteps) + '_' + num2str(numberOfEpisodes) ...
+        + '.csv');
+end
+
 chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
 chi2SumStore = zeros(numberOfEpisodes, 1);
 % edgeStore = cell(numberOfEpisodes, 1);
+Px = cell(1);
 
-R = diag([1.6148 1.7197]);
-Q = diag([0.22683 0.11764 0.01808] .^2);
+% R = diag([1.2939 1.1973]);
+% Q = diag([0.4859 0.49986 0.038036] .^2);
+
+% % GPS measurement covariance
+% R = eye(2);
+% % Odometry covariance
+% Q = diag([0.1 0.05 pi/180].^2);
 
 % First run retrieves the graph dimensions
-[chi2SumStore(1), chi2Store(1, :), edges, dimX, dimZ] = ...
+[chi2SumStore(1), chi2Store(1, :), Px{1}, dimX, dimZ] = ...
     runGPSExample(numberOfTimeSteps, ...
-    omegaRScale, omegaQScale, testProposition4, ...
-    R, Q);
+    omegaRScale, omegaQScale, testProposition4);
 
 % Get chi2Sum and chi2 values,
 parfor r = 2 : numberOfEpisodes
     fprintf('%03d\n', r)
     [chi2SumStore(r), chi2Store(r, :)] = ...
         runGPSExample(numberOfTimeSteps, ...
-        omegaRScale, omegaQScale, testProposition4, ...
-        R, Q);
+        omegaRScale, omegaQScale, testProposition4);
 end
 
 % Compute the number of degrees of freedom
@@ -62,3 +78,14 @@ title(sprintf('Mean: %f; Covariance %f', meanChi2, covChi2))
 
 % Compute the Consistency Measurement
 C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
+
+Px = full(Px{1});
+if (omegaQScale == 1 && omegaRScale == 1)
+    writematrix(Px, "D:\University\UCL\project\week13\cov_gt_gps_" + ...
+        num2str(numberOfTimeSteps) + '_' + num2str(numberOfEpisodes) ...
+        + '.csv')
+else
+    diff = Px - cov_gt;
+    FrobeniusNorm = norm(diff, 'fro');
+end
+

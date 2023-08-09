@@ -4,12 +4,12 @@ clc;
 
 % Parameters for plotting
 os = "win";
-weekNum = 12;
+weekNum = 13;
 system_name = "linear";
 saveResults = true;
 
 % Number of steps per episode
-numberOfTimeSteps = 100;
+numberOfTimeSteps = 200;
 
 % Number of episodes
 numberOfEpisodes = 1000;
@@ -21,11 +21,11 @@ numberOfEpisodes = 1000;
 testProposition4 = true;
 
 % Parameters to change the frequency of measurement updates
-numObs = 100;
-obsPeriod = 1;
+numObs = 50;
+obsPeriod = 10;
 
 % Number of subgraphs
-numSubgraph = 1;
+numSubgraph = 2;
 
 % Define the search space for R and Q scales
 variables = [optimizableVariable('omegaRScale', [0.1, 1.9]);
