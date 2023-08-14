@@ -4,9 +4,9 @@ clc;
 
 % Parameters for plotting
 os = "win";
-weekNum = 13;
+weekNum = 15;
 system_name = "linear";
-saveResults = true;
+saveResults = false;
 
 % Number of steps per episode
 numberOfTimeSteps = 200;
@@ -25,7 +25,7 @@ numObs = 50;
 obsPeriod = 10;
 
 % Number of subgraphs
-numSubgraph = 2;
+numSubgraph = 1;
 
 % Define the search space for R and Q scales
 variables = [optimizableVariable('omegaRScale', [0.1, 1.9]);
@@ -44,7 +44,7 @@ acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement-per-second', 'lower-confidence-bound', ...
     'probability-of-improvement'};
 
-acquisitionFunc = acquisitionFuncs{3};
+acquisitionFunc = acquisitionFuncs{1};
 maxObjectiveEvaluations = 100;
 
 % Perform Bayesian optimisation

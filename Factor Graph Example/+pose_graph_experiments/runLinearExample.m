@@ -6,6 +6,9 @@ function [chi2, chi2List, Px, dimX, dimZ] = ...
     import pose_graph_experiments.*;
     import two_d_tracking_model_answer.*;
 
+    % Persistent variables to store trueX and z across function calls
+    persistent stored_trueX stored_z
+
     % Check if numSubgraph is provided, if not, set it to 1
     if (nargin < 7)
         numSubgraph = 1;
@@ -18,7 +21,7 @@ function [chi2, chi2List, Px, dimX, dimZ] = ...
 
     % Some parameters
     dT = 1;
-    sigmaR = 10;
+    sigmaR = 1;
     sigmaQ = 1;
 
     % Work out the state transition equations for the simulator
@@ -44,19 +47,36 @@ function [chi2, chi2List, Px, dimX, dimZ] = ...
     omegaR = omegaRScale * inv(R);
     omegaQ = omegaQScale * inv(Q);
 
-    % Ground truth array
-    trueX = zeros(4, numberOfTimeSteps);
-    z = zeros(2, numberOfTimeSteps);
+    if isempty(stored_trueX) || isempty(stored_z)
+        % Ground truth array
+        trueX = zeros(4, numberOfTimeSteps);
+        z = zeros(2, numberOfTimeSteps);
+    
+        % First timestep
+        trueX(2, 1) = 0.1;
+        trueX(4, 1) = -0.1;
+        z(:, 1) = H * trueX(:, 1) + sqrtm(sigmaR) * randn(2, 1);
+    
+        % Now predict the subsequent steps
+        for k = 2 : numberOfTimeSteps
+            trueX(:, k) = F * trueX(:, k - 1) + sqrtm(Q) * randn(4, 1);
+            z(:, k) = H * trueX(:, k) + sqrtm(sigmaR) * randn(2, 1);
+        end
 
-    % First timestep
-    trueX(2, 1) = 0.1;
-    trueX(4, 1) = -0.1;
-    z(:, 1) = H * trueX(:, 1) + sqrtm(sigmaR) * randn(2, 1);
+        % Save the matrices to .csv files
+        save('D:\University\UCL\project\trueX.mat', 'trueX');
+        save('D:\University\UCL\project\z.mat', 'z');
 
-    % Now predict the subsequent steps
-    for k = 2 : numberOfTimeSteps
-        trueX(:, k) = F * trueX(:, k - 1) + sqrtm(Q) * randn(4, 1);
-        z(:, k) = H * trueX(:, k) + sqrtm(sigmaR) * randn(2, 1);
+%         % comment this if new x and z needed
+%         trueX = matfile('D:\University\UCL\project\trueX.mat').trueX; 
+%         z = matfile('D:\University\UCL\project\z.mat').z; 
+
+        % Store the computed trueX and z values in the persistent variables
+        stored_trueX = trueX;
+        stored_z = z;
+    else
+        trueX = stored_trueX;
+        z = stored_z;
     end
 
     timeStepsPerSubgraph = floor(numberOfTimeSteps / numSubgraph);
@@ -175,20 +195,24 @@ function [chi2, chi2List, Px, dimX, dimZ] = ...
         % Compute the chi2 value
         [chi2_subgraph, ~] = graph.chi2();
         
+        % For subgraph case, the chi2 stores summed chi2 value for each
+        % subgraphs. chi2List stores the corresponding chi2 value for each
+        % subgraph.
         chi2 = chi2 + chi2_subgraph;
         chi2List = [chi2List; chi2_subgraph];
-        
+
+        % If all outputs needed
         if (nargout == 5)
             edges = graph.edges();
             vertices = graph.vertices();
-    
+        
             % Get the covariance of vertices
-            [~, Px{subgraphIndex}] = graph.computeMarginals();
-    
+            [X{subgraphIndex}, Px{subgraphIndex}] = graph.computeMarginals();
+        
             for e = 1 : length(edges)
                 dimZ(subgraphIndex) = dimZ(subgraphIndex) + edges{e}.dimension();
             end
-    
+        
             for v =  1 : length(vertices)
                 dimX(subgraphIndex) = dimX(subgraphIndex) + vertices{v}.dimension();
             end

@@ -26,7 +26,7 @@ chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
 % significantly
 parfor r = 1 : numberOfEpisodes
     fprintf('%03d\n', r)
-    chi2Store(r, :) = runExample(numberOfTimeSteps, 1, 10000, testProposition4);
+    chi2Store(r, :) = runExample(numberOfTimeSteps, 1, 1, testProposition4);
 end
 
 % Now plot the results. The first two figures show the edge-by-edge chi2

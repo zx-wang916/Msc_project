@@ -19,17 +19,17 @@ omegaQScale = 1;
 % omegaRScale = 1;
 % omegaQScale = 1;
 
-% omegaRScale = 1.1141;
-% omegaQScale = 0.84068;
+% omegaRScale = 0.6539;
+% omegaQScale = 1.4681;
 
 
 % Parameters to change the frequency of measurement updates
 numObs = 50;
-obsPeriod = [10 20];
-% obsPeriod = 5;
+% obsPeriod = [1 5 10 15];
+obsPeriod = 10;
 
 % Number of subgraphs
-numSubgraph = 2;
+numSubgraph = 1;
 
 % if (omegaQScale ~= 1 || omegaRScale ~= 1)
 %     cov_gt = load("D:\University\UCL\project\week13\cov_gt_" + ...
