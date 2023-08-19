@@ -8,29 +8,25 @@ function getAllSurfPlots(os, weekNum, omegaRScaleArray, omegaQScaleArray)
         basePath = "D:\\University\\UCL\\project\\week" + weekNum + "\\";
     end
 
-    % Get all CSV files in the folder
-    allFiles = dir(basePath + "*.csv");
-    fileNames = {allFiles.name};
+    % Get all CSV files recursively in the folder and subfolders
+    allFiles = getAllCsvFiles(basePath);
 
     % Initialise processed files list
     processedFiles = {};
 
     % Loop through all files
-    for i = 1:numel(fileNames)
+    for i = 1:numel(allFiles)
+        filePath = allFiles{i};
+        [~, fileName, ~] = fileparts(filePath);
+
         % Only consider files starting with "C_"
-        if startsWith(fileNames{i}, 'C_')
-            % Define the file path
-            filePath = basePath + fileNames{i};
-            % Ignore non-existing files
-            if ~isfile(filePath)
-                continue;
-            end
+        if startsWith(fileName, 'C_')
             
             % Read values
             C = readmatrix(filePath);
             
             % Extract system_name from the file name
-            splitName = split(fileNames{i}, '_');
+            splitName = split(fileName, '_');
             if numel(splitName) == 2
                 % If there is only one underscore, extract the substring between underscore and ".asv"
                 system_name = extractBefore(splitName{2}, '.');
@@ -46,14 +42,14 @@ function getAllSurfPlots(os, weekNum, omegaRScaleArray, omegaQScaleArray)
             end
 
             % Check if file name contains 'prop4'
-            if contains(fileNames{i}, 'prop4')
+            if contains(fileName, 'prop4')
                 prop = ' (Proposition 4)';
             else
                 prop = ' (Proposition 3)';
             end
             
             % Check if file name contains 'measurement_rate'
-            if contains(fileNames{i}, 'measurement_rate')
+            if contains(fileName, 'measurement_rate')
                 splitRate = split(splitName{5}, '-');
                 numObs = splitRate{1};
                 obsPeriod = splitRate{2};
@@ -73,9 +69,34 @@ function getAllSurfPlots(os, weekNum, omegaRScaleArray, omegaQScaleArray)
             
             % Compute processed files
             processedFiles = [processedFiles, filePath];
-            disp(" => " + length(processedFiles) + " Finished")
+            disp(" => Plot " + length(processedFiles) + ": " + filePath + " Finished")
         end
     end
     disp("Finish Plotting")
     disp(length(processedFiles) +" Figures generated!")
+
+    function fileList = getAllCsvFiles(dirName)
+        % Get the data for the current directory
+        dirData = dir(dirName);
+        
+        % Find the index for directories
+        dirIndex = [dirData.isdir];
+        
+        % Filter CSV files
+        isCsvFile = cellfun(@(x) (length(x) > 4) && strcmpi(x(end-3:end), '.csv'), {dirData.name});
+        fileList = {dirData(~dirIndex & isCsvFile).name}';
+        
+        if ~isempty(fileList)
+            fileList = cellfun(@(x) fullfile(dirName, x), fileList, 'UniformOutput', false);
+        end
+        
+        % Get a list of subdirectories excluding '.' and '..'
+        subDirs = setdiff({dirData(dirIndex).name}', {'.', '..'});
+        
+        % Loop over valid subdirectories and call this function recursively
+        for iDir = 1:length(subDirs)
+            nextDir = fullfile(dirName, subDirs{iDir});
+            fileList = [fileList; getAllCsvFiles(nextDir)];
+        end
+    end
 end

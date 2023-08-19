@@ -22,10 +22,10 @@ testProposition4 = true;
 
 % Parameters to change the frequency of measurement updates
 numObs = 50;
-obsPeriod = 10;
+obsPeriod = [1 5 10];
 
 % Number of subgraphs
-numSubgraph = 1;
+numSubgraph = length(obsPeriod);
 
 % Define the search space for R and Q scales
 variables = [optimizableVariable('omegaRScale', [0.1, 1.9]);
@@ -104,12 +104,13 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
 %     R = [r11 0; 0 r22];
 %     Q = [Q0 zeros(2); zeros(2) Q0];
 
-    % Compute the number of edges
-    numberOfEdges = 2 * numObs - 1 + ...
+
+    if numSubgraph == 1
+        % Compute the number of edges
+        numberOfEdges = 2 * numObs - 1 + ...
         floor((numberOfTimeSteps - numObs) / obsPeriod) + ...
         numberOfTimeSteps - numObs;
-    
-    if numSubgraph == 1
+
         chi2Store = zeros(numberOfEpisodes, numberOfEdges);
         chi2SumStore = zeros(numberOfEpisodes, 1);
     else
@@ -147,10 +148,17 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
         for i = 1:numSubgraph
             meanChi2 = mean(chi2Store(:, i));
             covChi2 = cov(chi2Store(:, i));
-        
+
+            % Compute the number of degrees of freedom
+            if (testProposition4 == true)
+                N = dimZ(i) - dimX(i);
+            else
+                N = dimZ(i);
+            end
+
             % Compute the Consistency Measurement for each subgraph
             C(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
         end
-        cVal = mean(C);
+        cVal = sum(C);
     end
 end

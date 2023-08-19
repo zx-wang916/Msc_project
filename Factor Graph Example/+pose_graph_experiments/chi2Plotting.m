@@ -9,8 +9,8 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
     if nargin < 12 || isempty(numObs)
         numObs = numberOfTimeSteps; % default value
     end
-    if nargin < 13
-        obsPeriod = 1; % default value
+    if nargin < 13 || isempty(obsPeriod)
+        obsPeriod = ones(1, numSubgraph); % default value
     end
     if nargin < 14
         numSubgraph = 1; % default value
@@ -36,13 +36,13 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
     Mean_name = "meanChi2_" + system_name;
     Cov_name = "covChi2_" + system_name;
 
-    if obsPeriod ~= 1
-        C_name = C_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
-        Mean_name = Mean_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
-        Cov_name = Cov_name + "_measurement_rate_" + numObs + "-" + obsPeriod;
+    if size(obsPeriod, 2) ~= 1 || size(obsPeriod, 2) == 1 && obsPeriod ~= 1
+        C_name = C_name + "_measurement_rate_" + numObs + "-" + num2str(obsPeriod);
+        Mean_name = Mean_name + "_measurement_rate_" + numObs + "-" + num2str(obsPeriod);
+        Cov_name = Cov_name + "_measurement_rate_" + numObs + "-" + num2str(obsPeriod);
     end
 
-    if testProposition4 == true
+    if testProposition4
         C_name = C_name + "_prop4";
         Mean_name = Mean_name + "_prop4";
         Cov_name = Cov_name + "_prop4";
@@ -57,7 +57,7 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
         ylabel('omegaQScale');
         title('Consistency Measurement (C) for different Omega values');
         axis xy;
-        if (saveResults)
+        if saveResults
             saveas(gcf, basePath + C_name + ".png")
             writematrix(C_store, basePath + C_name + '.csv')
         end
@@ -69,7 +69,7 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
         ylabel('omegaQScale');
         title('Mean Chi2 for different Omega values');
         axis xy;
-        if (saveResults)
+        if saveResults
             saveas(gcf, basePath + Mean_name + ".png")
             writematrix(meanChi2_store, basePath + Mean_name + '.csv')
         end
@@ -81,7 +81,7 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
         ylabel('omegaQScale');
         title('Covariance Chi2 for different Omega values');
         axis xy;
-        if (saveResults)
+        if saveResults
             saveas(gcf, basePath + Cov_name + ".png")
             writematrix(covChi2_store, basePath + Cov_name + '.csv')
         end
@@ -99,7 +99,7 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
             ylabel('omegaQScale');
             title(string("Consistency Measurement (C) for Subgraph " + i));
             axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-            if (saveResults)
+            if saveResults
                 saveas(gcf, basePath + C_name_i + ".png")
                 writematrix(C_store(:,:,i), basePath + C_name_i + '.csv')
             end
@@ -112,7 +112,7 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
             ylabel('omegaQScale');
             title(string("Mean Chi2 for Subgraph " + i));
             axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-            if (saveResults)
+            if saveResults
                 saveas(gcf, basePath + Mean_name_i + ".png")
                 writematrix(meanChi2_store(:,:,i), basePath + Mean_name_i + '.csv')
             end
@@ -125,10 +125,15 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
             ylabel('omegaQScale');
             title(string("Covariance Chi2 for Subgraph " + i));
             axis xy; % flips the axis so omegaRScale is x and omegaQScale is y
-            if (saveResults)
+            if saveResults
                 saveas(gcf, basePath + Cov_name_i + ".png")
                 writematrix(covChi2_store(:,:,i), basePath + Cov_name_i + '.csv')
             end
+        end
+
+        % Store the summed C value for each subgraph
+        if saveResults
+            writematrix(sum(C_store, 3), basePath + C_name + "_sumC.csv");
         end
     end
 end
