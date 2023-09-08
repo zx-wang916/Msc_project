@@ -8,13 +8,13 @@ import two_d_tracking_model_answer.*;
 
 % Parameters for plotting
 os = "win";
-weekNum = 1;
+weekNum = 16;
 system_name = "linear";
-saveResults = false;
+saveResults = true;
 save2txt = true;
 
 numberOfTimeSteps = 200; % Number of steps per episode
-numberOfEpisodes = 10; % Number of episodes
+numberOfEpisodes = 1000; % Number of episodes
 scenario = 1;
 
 basePath = "D:\University\UCL\project\week" + weekNum + "\";
@@ -31,7 +31,7 @@ end
 % ground truth value, and does not optimize. If set to true, we test
 % proposition 4, which is the distribution after optimizing with noisy
 % measurements
-testProposition4 = true;
+testProposition4 = false;
 
 % Parameters to change the frequency of measurement updates
 numObs = 50;

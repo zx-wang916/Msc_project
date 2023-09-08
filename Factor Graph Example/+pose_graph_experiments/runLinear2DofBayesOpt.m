@@ -1,12 +1,6 @@
-close all;
-clear all;
-clc;
-
-% Parameters for plotting
-os = "win";
-weekNum = 18;
-system_name = "linear";
-saveResults = false;
+import g2o.core.*;
+import pose_graph_experiments.*;
+import two_d_tracking_model_answer.*;
 
 % Number of steps per episode
 numberOfTimeSteps = 200;
@@ -25,22 +19,15 @@ testProposition4 = true;
 % Parameters to change the frequency of measurement updates
 numObs = 50;
 obsPeriod = [1 5 10];
-% obsPeriod = 1;
 
 % Number of subgraphs
 numSubgraph = length(obsPeriod);
 
 % Define the search space for R and Q scales
-variables = [optimizableVariable('omegaRScale', [0.1, 1.9]);
-             optimizableVariable('omegaQScale', [0.1, 1.9])];
-
-% variables = [optimizableVariable('r11', [0.1, 10]);
-%              optimizableVariable('r22', [0.1, 10]);
-%              optimizableVariable('q0_11', [0.1, 1]);
-%              optimizableVariable('q0_12', [0.1, 1]);
-%              optimizableVariable('q0_21', [0.1, 1]);
-%              optimizableVariable('q0_22', [0.1, 1]);];
-
+variables = [optimizableVariable('R11', [0.1, 10]);
+             optimizableVariable('R22', [0.1, 10]);
+             optimizableVariable('Q11', [1, 20]);
+             optimizableVariable('Q22', [1, 20]);];
 
 acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement', 'expected-improvement-plus', ...
@@ -48,40 +35,16 @@ acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'probability-of-improvement'};
 
 acquisitionFunc = acquisitionFuncs{1};
-maxObjectiveEvaluations = 100;
+maxObjectiveEvaluations = 200;
 
 % Perform Bayesian optimisation
 results = bayesopt(@(x) targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4, numObs, obsPeriod, numSubgraph, scenario), variables, ...
     'AcquisitionFunctionName', acquisitionFunc, 'MaxObjectiveEvaluations', maxObjectiveEvaluations);
 
-% Path to store results
-if os == "mac"
-    basePath = "~/Desktop/week" + weekNum + "/";
-else
-    basePath = "D:\University\UCL\project\week" + weekNum + "\";
-end
-
-% Create folder if not exist and display log
-if ~exist(basePath, 'dir')
-    mkdir(basePath);
-    disp('Folder created successfully.');
-else
-    disp('Folder already exists.');
-end
-
 if testProposition4 == true
     prop = "_prop4";
 else
     prop = "";
-end
-
-fileName = system_name + "_results_" + ...
-    num2str(numberOfTimeSteps) + "-" + num2str(numberOfEpisodes) + ...
-    "_" + acquisitionFunc + ...
-    "_eval_" + maxObjectiveEvaluations + ...
-    prop + ".mat";
-if saveResults == true
-    save(basePath + fileName, 'results');
 end
 
 % Define the target function, which takes omega scales, and returns the calculated C value.
@@ -90,23 +53,17 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
     import pose_graph_experiments.*;
     import two_d_tracking_model_answer.*;
     
-    % Extract the variables
-    omegaRScale = x.omegaRScale;
-    omegaQScale = x.omegaQScale;
-%     r11 = x.r11;
-%     r22 = x.r22;
-%     q0_11 = x.q0_11 * 1/3;
-%     q0_12 = x.q0_12 * 1/2;
-%     q0_21 = x.q0_21 * 1/2;
-%     q0_22 = x.q0_22 * 1;
-%     Q0 = [q0_11 q0_12; q0_21 q0_22];
-%     omegaRScale = 1;
-%     omegaQScale = 1;
-% 
-%     % Redefine R and Q with new diagonal elements 
-%     R = [r11 0; 0 r22];
-%     Q = [Q0 zeros(2); zeros(2) Q0];
+    omegaRScale = 1;
+    omegaQScale = 1;
 
+    % Extract the variables
+    R11 = x.R11;
+    R22 = x.R22;
+    Q11 = x.Q11;
+    Q22 = x.Q22;
+
+    sigmaR = diag([R11, R22]);
+    sigmaQ = diag([Q11, Q22]);
 
     if numSubgraph == 1
         % Compute the number of edges
@@ -123,15 +80,17 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
 
     % First run retrieves the graph dimensions
     [chi2SumStore(1), chi2Store(1, :), ~, ~, dimX, dimZ] = ...
-        runLinearExample(numberOfTimeSteps, ...
+        linear2Dof(numberOfTimeSteps, ...
         omegaRScale, omegaQScale, testProposition4, ...
-        numObs, obsPeriod, numSubgraph, scenario);
+        numObs, obsPeriod, numSubgraph, scenario, ...
+        sigmaR, sigmaQ);
     
     parfor r = 2 : numberOfEpisodes
         [chi2SumStore(r), chi2Store(r, :)] = ...
-            runLinearExample(numberOfTimeSteps, ...
+            linear2Dof(numberOfTimeSteps, ...
             omegaRScale, omegaQScale, testProposition4, ...
-            numObs, obsPeriod, numSubgraph, scenario);
+            numObs, obsPeriod, numSubgraph, scenario, ...
+            sigmaR, sigmaQ);
     end
 
 

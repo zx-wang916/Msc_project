@@ -13,11 +13,11 @@ numberOfTimeSteps = 20;
 numberOfEpisodes = 2000;
 
 % Omega Scales
-% omegaRScale = 1;
-% omegaQScale = 1;
+omegaRScale = 1;
+omegaQScale = 1;
 
-omegaRScale = 0.1;
-omegaQScale = 0.1; % 17.9590
+% omegaRScale = 0.1;
+% omegaQScale = 0.1; % 17.9590
 
 % omegaRScale = 1.0215;
 % omegaQScale = 0.62648;
@@ -28,11 +28,11 @@ omegaQScale = 0.1; % 17.9590
 % measurements
 testProposition4 = true;
 
-if (omegaQScale ~= 1 || omegaRScale ~= 1)
-    cov_gt = load("D:\University\UCL\project\week13\cov_gt_gps_" + ...
-        num2str(numberOfTimeSteps) + '_' + num2str(numberOfEpisodes) ...
-        + '.csv');
-end
+% if (omegaQScale ~= 1 || omegaRScale ~= 1)
+%     cov_gt = load("D:\University\UCL\project\week13\cov_gt_gps_" + ...
+%         num2str(numberOfTimeSteps) + '_' + num2str(numberOfEpisodes) ...
+%         + '.csv');
+% end
 
 chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
 chi2SumStore = zeros(numberOfEpisodes, 1);
@@ -79,13 +79,13 @@ title(sprintf('Mean: %f; Covariance %f', meanChi2, covChi2))
 % Compute the Consistency Measurement
 C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
 
-Px = full(Px{1});
-if (omegaQScale == 1 && omegaRScale == 1)
-    writematrix(Px, "D:\University\UCL\project\week13\cov_gt_gps_" + ...
-        num2str(numberOfTimeSteps) + '_' + num2str(numberOfEpisodes) ...
-        + '.csv')
-else
-    diff = Px - cov_gt;
-    FrobeniusNorm = norm(diff, 'fro');
-end
+% Px = full(Px{1});
+% if (omegaQScale == 1 && omegaRScale == 1)
+%     writematrix(Px, "D:\University\UCL\project\week13\cov_gt_gps_" + ...
+%         num2str(numberOfTimeSteps) + '_' + num2str(numberOfEpisodes) ...
+%         + '.csv')
+% else
+%     diff = Px - cov_gt;
+%     FrobeniusNorm = norm(diff, 'fro');
+% end
 

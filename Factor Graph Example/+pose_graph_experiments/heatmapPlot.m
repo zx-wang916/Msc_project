@@ -5,8 +5,15 @@
 omegaRScaleArray = 0.1:0.02:1.9;
 omegaQScaleArray = 0.1:0.02:1.9;
 
-filePaths = ["D:\University\UCL\project\week15\scenario_1\C_linear_measurement_rate_50-1   5  10_prop4_sumC.csv" 
-                "D:\University\UCL\project\week15\scenario_2\C_linear_prop4_sumC.csv" 
+filePaths = [
+    "D:\University\UCL\project\week16\prob3_scenario_1_obs=1\C_linear.csv"
+    "D:\University\UCL\project\week16\prop4_scenario_1_obs=1\C_linear_prop4.csv"
+    "D:\University\UCL\project\week16\gps_20-2000_prop3\C_gps.csv"
+    "D:\University\UCL\project\week16\gps_20-2000_prop4\C_gps_prop4.csv"
+    "D:\University\UCL\project\week16\prop3_scenario_1\C_linear_measurement_rate_50-1   5  10_sumC.csv"
+    %"D:\University\UCL\project\week16\prop3_scenario_2\C_linear_measurement_rate_50-1   5  10_sumC.csv"
+    "D:\University\UCL\project\week15\scenario_1\C_linear_measurement_rate_50-1   5  10_prop4_sumC.csv" 
+    %"D:\University\UCL\project\week15\scenario_2\C_linear_prop4_sumC.csv" 
             ];
 
 for i = 1: length(filePaths)
@@ -27,6 +34,8 @@ function generateHeatmap(filePath, omegaRScaleArray, omegaQScaleArray)
     % Display heatmap
     figure;
     imagesc(omegaRScaleArray, omegaQScaleArray, matrixData);
+    xlabel('omegaRScale');
+    ylabel('omegaQScale');
     title(titleName)
     colorbar;
     
@@ -45,6 +54,6 @@ function generateHeatmap(filePath, omegaRScaleArray, omegaQScaleArray)
 
     % Mark the minimum value location with a yellow cross
     hold on;
-    plot(omegaRScaleArray(col), omegaQScaleArray(row), '+', 'MarkerSize', 10, 'LineWidth', 1.5 , 'Color', 'yellow'); 
+    plot(omegaRScaleArray(col), omegaQScaleArray(row), '+', 'MarkerSize', 10, 'LineWidth', 1.5 , 'Color', 'red'); 
 end
 

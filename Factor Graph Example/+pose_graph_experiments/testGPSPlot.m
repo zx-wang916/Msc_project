@@ -8,29 +8,40 @@ import odometry_model_answer.*;
 
 % Parameters for plotting
 os = "win";
-weekNum = 1;
+weekNum = 16;
 system_name = "gps";
 saveResults = true;
+save2txt = true;
 
 % Number of steps per episode
-numberOfTimeSteps = 10;
+numberOfTimeSteps = 20;
 
 % Number of episodes
-numberOfEpisodes = 100;
+numberOfEpisodes = 2000;
+
+basePath = "D:\University\UCL\project\week" + weekNum + "\";
+fileName = "C_GT_GPS.txt";
+filePath = basePath + fileName;
+if exist(filePath, 'file')
+    % Open the file in write mode. This will clear its content.
+    fid = fopen(filePath, 'w');
+    % Close the file
+    fclose(fid);
+end
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
 % proposition 4, which is the distribution after optimizing with noisy
 % measurements
-testProposition4 = false;
+testProposition4 = true;
 
 % Parameters to change the frequency of measurement updates
 numObs = 100;
 obsPeriod = 1;
 
 % Define the range and step for Omega scales
-omegaRScaleArray = 0.1:0.1:1.9;
-omegaQScaleArray = 0.1:0.1:1.9;
+omegaRScaleArray = 0.1:0.02:1.9;
+omegaQScaleArray = 0.1:0.02:1.9;
 
 [RM, QM] = meshgrid(omegaRScaleArray, omegaQScaleArray);
 
@@ -85,6 +96,18 @@ parfor i = 1:numel(RM)
     C_store(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
     meanChi2_store(i) = meanChi2;
     covChi2_store(i) = covChi2;
+end
+
+% save C values to txt file
+if save2txt
+    for i = 1:numel(RM)
+        [idxR, idxQ] = ind2sub(size(RM), i);
+        % Slightly cheesy way to append to an existing file
+        fid = fopen(filePath, 'a+');
+        str = strjoin({sprintf('%.2f %.2f', QM(i), RM(i)), sprintf(' %d\n', C_store(idxR, idxQ, :))});
+        fprintf(fid, '%s', str);
+        fclose(fid);
+    end
 end
 
 %delete(gcp('nocreate')); % stop the parallel pool

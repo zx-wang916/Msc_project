@@ -10,7 +10,7 @@ function chi2Plotting(saveResults, testProposition4, os, weekNum, system_name, C
         numObs = numberOfTimeSteps; % default value
     end
     if nargin < 13 || isempty(obsPeriod)
-        obsPeriod = ones(1, numSubgraph); % default value
+        obsPeriod = 1; % default value
     end
     if nargin < 14
         numSubgraph = 1; % default value

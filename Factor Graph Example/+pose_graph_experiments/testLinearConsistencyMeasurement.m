@@ -14,18 +14,21 @@ numberOfEpisodes = 1000;
 
 scenario = 1;
 
-RM = 0.1 : 0.05 : 1.9;
-QM = 0.1 : 0.05 : 1.9;
+% RM = 0.1 : 0.05 : 1.9;
+% QM = 0.1 : 0.05 : 1.9;
 
-basePath = "D:\University\UCL\project\";
-fileName = "frob_results.txt";
-filePath = basePath + fileName;
-if exist(filePath, 'file')
-    % Open the file in write mode. This will clear its content.
-    fid = fopen(filePath, 'w');
-    % Close the file
-    fclose(fid);
-end
+RM = 1.0355;
+QM = 0.96101;
+
+% basePath = "D:\University\UCL\project\";
+% fileName = "frob_results.txt";
+% filePath = basePath + fileName;
+% if exist(filePath, 'file')
+%     % Open the file in write mode. This will clear its content.
+%     fid = fopen(filePath, 'w');
+%     % Close the file
+%     fclose(fid);
+% end
 
 % Omega Scales
 for omegaRScale = RM
@@ -38,20 +41,20 @@ for omegaRScale = RM
     % Number of subgraphs
     numSubgraph = length(obsPeriod);
     
-    if (omegaQScale ~= 1 || omegaRScale ~= 1 && numSubgraph == 1)
-        cov_gt = readmatrix("D:\University\UCL\project\week13\cov_gt_" + ...
-            num2str(numObs) + '_' + num2str(obsPeriod) ...
-            + '.csv');
-        X_gt = readmatrix("D:\University\UCL\project\week13\X_gt_" + ...
-            num2str(numObs) + '_' + num2str(obsPeriod) ...
-            + '.csv');
-    end
+%     if (omegaQScale ~= 1 || omegaRScale ~= 1 && numSubgraph == 1)
+%         cov_gt = readmatrix("D:\University\UCL\project\week13\cov_gt_" + ...
+%             num2str(numObs) + '_' + num2str(obsPeriod) ...
+%             + '.csv');
+%         X_gt = readmatrix("D:\University\UCL\project\week13\X_gt_" + ...
+%             num2str(numObs) + '_' + num2str(obsPeriod) ...
+%             + '.csv');
+%     end
     
     % If set to false, we test proposition 3, which initializes the graph at the
     % ground truth value, and does not optimize. If set to true, we test
     % proposition 4, which is the distribution after optimizing with noisy
     % measurements
-    testProposition4 = true;
+    testProposition4 = false;
     
     if numSubgraph == 1
         % Compute the number of edges
@@ -93,11 +96,11 @@ for omegaRScale = RM
         % This figure works out and plots the mean and covarianace for the sum of
         % the chi2 values over all edges. Propositions 3 and 4 are guaranteed to
         % apply to ONLY these values.
-%         figure(1)
-%         plot(chi2SumStore)
+        figure(1)
+        plot(chi2SumStore)
         meanChi2 = mean(chi2SumStore);
         covChi2 = cov(chi2SumStore);
-%         title(sprintf('Mean: %f; Covariance %f', meanChi2, covChi2))
+        title(sprintf('Mean: %f; Covariance %f', meanChi2, covChi2))
         
         Px = full(Px{1});
         X = X{1};
@@ -112,32 +115,33 @@ for omegaRScale = RM
                 num2str(numObs) + '_' + num2str(obsPeriod) ...
                 + '.csv')
             %}
-            disp("Jump over (1, 1)")
-            continue
+%             disp("Jump over (1, 1)")
+%             continue
         else
-            Px_diff = Px - cov_gt;
-            X_diff = X - X_gt;
-            Px_FrobeniusNorm = norm(Px_diff, 'fro');
-            X_FrobeniusNorm = norm(X_diff, 'fro');
+%             Px_diff = Px - cov_gt;
+%             X_diff = X - X_gt;
+%             Px_FrobeniusNorm = norm(Px_diff, 'fro');
+%             X_FrobeniusNorm = norm(X_diff, 'fro');
 
-            % Slightly cheesy way to append to an existing file
-            fid = fopen('D:\University\UCL\project\frob_results.txt', 'a+');
-            str = strjoin({sprintf('%.2f %.2f', omegaQScale, omegaRScale), sprintf(' %f', Px_FrobeniusNorm), sprintf(' %f\n', X_FrobeniusNorm)});
-            fprintf(fid, '%s', str);
-            fclose(fid);
+%             % Slightly cheesy way to append to an existing file
+%             fid = fopen('D:\University\UCL\project\frob_results.txt', 'a+');
+%             str = strjoin({sprintf('%.2f %.2f', omegaQScale, omegaRScale), sprintf(' %f', Px_FrobeniusNorm), sprintf(' %f\n', X_FrobeniusNorm)});
+%             fprintf(fid, '%s', str);
+%             fclose(fid);
         end
   
         % Compute the Consistency Measurement
         C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
+        J = abs(log(meanChi2/N));
     else
         % Compute the mean and covariance for each subgraph
         C = zeros(1, numSubgraph);
         for i = 1:numSubgraph
-%             figure(i)
-%             plot(chi2Store(:, i))
+            figure(i)
+            plot(chi2Store(:, i))
             meanChi2 = mean(chi2Store(:, i));
             covChi2 = cov(chi2Store(:, i));
-%             title(sprintf('Subgraph: %d, Mean: %f; Covariance %f', i, meanChi2, covChi2))
+            title(sprintf('Subgraph: %d, Mean: %f; Covariance %f', i, meanChi2, covChi2))
         
             % Compute the number of degrees of freedom
             if (testProposition4 == true)

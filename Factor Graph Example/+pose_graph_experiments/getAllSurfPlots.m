@@ -27,13 +27,14 @@ function getAllSurfPlots(os, weekNum, omegaRScaleArray, omegaQScaleArray)
             
             % Extract system_name from the file name
             splitName = split(fileName, '_');
-            if numel(splitName) == 2
-                % If there is only one underscore, extract the substring between underscore and ".asv"
-                system_name = extractBefore(splitName{2}, '.');
-            else
-                % If there are two or more underscores, extract the string between the first and second underscore
-                system_name = splitName{2};
-            end
+%             if numel(splitName) == 2
+%                 % If there is only one underscore, extract the substring between underscore and ".asv"
+%                 system_name = extractBefore(splitName{2}, '.');
+%             else
+%                 % If there are two or more underscores, extract the string between the first and second underscore
+%                 system_name = splitName{2};
+%             end
+            system_name = splitName{2};
             % Handle the capitalization for system_name
             if system_name == "gps"
                 system_name = string(upper(system_name));
@@ -59,7 +60,7 @@ function getAllSurfPlots(os, weekNum, omegaRScaleArray, omegaQScaleArray)
             end
 
             % Plotting
-            figure(i)
+            figure(length(processedFiles) + 1)
             surf(omegaRScaleArray, omegaQScaleArray, C);
             colorbar; % adds a colorbar, which indicates the scale of C values
             xlabel('omegaRScale');

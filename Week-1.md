@@ -22,7 +22,7 @@ The problem we are interested in is **being able to choose the information matri
 
 From having a quick look, a good introduction is in lectures 4.3.2 and 4.3.3 of this lecture series:
 
-[https://www.youtube.com/watch?v=UmC2OaJWBeI&list=PLTD_k0sZVYFqjFDkJV8GE2EwfxNK59fJY&ab_channel=LarsHammarstrand](https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DUmC2OaJWBeI%26list%3DPLTD_k0sZVYFqjFDkJV8GE2EwfxNK59fJY%26ab_channel%3DLarsHammarstrand&data=05|01|zuxun.wang.22%40ucl.ac.uk|a0649f57edbc4d0d680a08db466324a7|1faf88fea9984c5b93c9210a11d9a5c2|0|0|638181163843520324|Unknown|TWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D|3000|||&sdata=U3IC5nhxjIpXFmRovzZkH%2FmGfrbgNcuJpaTwxSNjxv0%3D&reserved=0)
+[https://www.youtube.com/watch?v=UmC2OaJWBeI&list=PLTD_k0sZVYFqjFDkJV8GE2EwfxNK59fJY&ab_channel=LarsHammarstrand](https://www.youtube.com/watch?v=UmC2OaJWBeI&list=PLTD_k0sZVYFqjFDkJV8GE2EwfxNK59fJY&ab_channel=LarsHammarstrand)
 
 In particular, in 4.3.2 you want to look from about 05:32 onwards. (The comment is correct - the specified disribution is wrong. However, the first two moments are correct, and this fact will potentially be useful later in your project.)
 
@@ -36,7 +36,7 @@ We have a paper which is being developed which extends this.
 
 For factor graphs, the crucial result we need is from this paper:
 
-[https://www.mit.edu/~mrrobot/assets/khosoussi19ijrr.pdf](https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.mit.edu%2F~mrrobot%2Fassets%2Fkhosoussi19ijrr.pdf&data=05|01|zuxun.wang.22%40ucl.ac.uk|a0649f57edbc4d0d680a08db466324a7|1faf88fea9984c5b93c9210a11d9a5c2|0|0|638181163843520324|Unknown|TWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D|3000|||&sdata=sPXyeAHptU2H8eUwu4MgDRXKvdGP02SsrqnmBy9ZsbA%3D&reserved=0)
+[https://www.mit.edu/~mrrobot/assets/khosoussi19ijrr.pdf](https://www.mit.edu/~mrrobot/assets/khosoussi19ijrr.pdf)
 
 The main thing we need is proposition 4 - this tells us that the residuals in a well-tuned factor graph should look a bit like the $$chi^2$$ distribution we get with the tuning for the Kalman filter. Given that, it suggests we could use the Kalman filter tuning method for the factor graph.
 
