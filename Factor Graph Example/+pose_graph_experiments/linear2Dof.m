@@ -1,6 +1,6 @@
 % THIS SCRIPT IS USED TO TEST 2D LINEAR EXAMPLE. PLEASE ONLY COMMENT LINES
-% ABOVE 118 AND CHANGE THE FUNCTION NAME TO "linear2Dof", IF WE ARE
-% TRYING TO TEST BO ON 2D CASE. PLEASE UNCOMMENT LINES 1- 118 AND CHANGE
+% ABOVE 121 AND CHANGE THE FUNCTION NAME TO "linear2Dof", IF WE ARE
+% TRYING TO TEST BO ON 2D CASE. PLEASE UNCOMMENT LINES 1- 121 AND CHANGE
 % THE FUNCTION NAME TO "linear2dof" IF TESTING THE MEAN AND COVARIANCE
 % VALUES.
 
@@ -11,12 +11,11 @@ numberOfEpisodes = 1000;
 scenario = 1;
 omegaRScale = 1;
 omegaQScale = 1;
-testProposition4 = true;
+testProposition4 = false;
 numObs = 50;
 obsPeriods = [1 5 10];
 % obsPeriods = 1;
 numSubgraph = length(obsPeriods);
-
 
 % R11s = 0.1:0.2:2;
 % R22s = 0.1:0.2:2;
@@ -34,7 +33,7 @@ totalCombinations = length(R11s) * length(R22s) * length(Q11s) * length(Q22s);
 % Flatten the grid into a single list of combinations
 allCombinations = combvec(R11s, R22s, Q11s, Q22s)';
 
-parfor idx = 1:totalCombinations
+for idx = 1:totalCombinations
     R11 = allCombinations(idx, 1);
     R22 = allCombinations(idx, 2);
     Q11 = allCombinations(idx, 3);
@@ -62,7 +61,7 @@ parfor idx = 1:totalCombinations
     [chi2SumStore(1), chi2Store(1, :), ~, ~, dimX, dimZ] = linear2dof(numberOfTimeSteps, omegaRScale, omegaQScale, ...
         testProposition4, numObs, obsPeriods, numSubgraph, scenario, sigmaR, sigmaQ); % <- Use your specific input arguments here
 
-    for r = 2 : numberOfEpisodes
+    parfor r = 2 : numberOfEpisodes
         fprintf('%03d\n', r)
         [chi2SumStore(r), chi2Store(r, :)] = ...
             linear2dof(numberOfTimeSteps, ...
@@ -70,16 +69,20 @@ parfor idx = 1:totalCombinations
             numObs, obsPeriods, numSubgraph, scenario, sigmaR, sigmaQ);
     end
 
-    % Compute the number of degrees of freedom
-    if (testProposition4 == true)
-        N = dimZ - dimX;
-    else
-        N = dimZ;
-    end
-    
+
     if numSubgraph == 1
+        % Compute the number of degrees of freedom
+        if (testProposition4 == true)
+            N = dimZ - dimX;
+        else
+            N = dimZ;
+        end
         meanChi2 = mean(chi2SumStore);
         covChi2 = cov(chi2SumStore);
+
+        figure(1)
+        plot(chi2SumStore)
+        title(sprintf('Mean: %f; Covariance %f', meanChi2, covChi2))
         
         C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
         fid = fopen('D:\University\UCL\project\2dlinearResults_obs1.txt', 'a+');
@@ -87,18 +90,22 @@ parfor idx = 1:totalCombinations
         fprintf(fid, '%s', str);
         fclose(fid);
     else
+
         % Compute the mean and covariance for each subgraph
         C = zeros(1, numSubgraph);
         for i = 1:numSubgraph
-            meanChi2 = mean(chi2Store(:, i));
-            covChi2 = cov(chi2Store(:, i));
-        
             % Compute the number of degrees of freedom
             if (testProposition4 == true)
                 N = dimZ(i) - dimX(i);
             else
                 N = dimZ(i);
             end
+
+            figure(i)
+            plot(chi2Store(:, i))
+            meanChi2 = mean(chi2Store(:, i));
+            covChi2 = cov(chi2Store(:, i));
+            title(sprintf('Subgraph: %d, Correct N: %d, Mean: %f; Covariance %f', i, N, meanChi2, covChi2))
     
             % Compute the Consistency Measurement for each subgraph
             C(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
