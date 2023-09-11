@@ -17,30 +17,21 @@ omegaRScale = 1;
 omegaQScale = 1;
 
 % omegaRScale = 0.1;
-% omegaQScale = 0.1; % 17.9590
-
-% omegaRScale = 1.0215;
-% omegaQScale = 0.62648;
+% omegaQScale = 0.1; 
 
 % If set to false, we test proposition 3, which initializes the graph at the
 % ground truth value, and does not optimize. If set to true, we test
 % proposition 4, which is the distribution after optimizing with noisy
 % measurements
-testProposition4 = true;
-
-% if (omegaQScale ~= 1 || omegaRScale ~= 1)
-%     cov_gt = load("D:\University\UCL\project\week13\cov_gt_gps_" + ...
-%         num2str(numberOfTimeSteps) + '_' + num2str(numberOfEpisodes) ...
-%         + '.csv');
-% end
+testProposition4 = false;
 
 chi2Store = zeros(numberOfEpisodes, 2 * numberOfTimeSteps - 1);
 chi2SumStore = zeros(numberOfEpisodes, 1);
 % edgeStore = cell(numberOfEpisodes, 1);
 Px = cell(1);
 
-% R = diag([1.2939 1.1973]);
-% Q = diag([0.4859 0.49986 0.038036] .^2);
+R = diag([1.6148 1.7197]);
+Q = diag([0.22683 0.11764 0.01808] .^2);
 
 % % GPS measurement covariance
 % R = eye(2);
@@ -50,14 +41,16 @@ Px = cell(1);
 % First run retrieves the graph dimensions
 [chi2SumStore(1), chi2Store(1, :), Px{1}, dimX, dimZ] = ...
     runGPSExample(numberOfTimeSteps, ...
-    omegaRScale, omegaQScale, testProposition4);
+    omegaRScale, omegaQScale, testProposition4, ...
+    R, Q);
 
 % Get chi2Sum and chi2 values,
 parfor r = 2 : numberOfEpisodes
     fprintf('%03d\n', r)
     [chi2SumStore(r), chi2Store(r, :)] = ...
         runGPSExample(numberOfTimeSteps, ...
-        omegaRScale, omegaQScale, testProposition4);
+        omegaRScale, omegaQScale, testProposition4, ...
+        R, Q);
 end
 
 % Compute the number of degrees of freedom

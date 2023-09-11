@@ -47,7 +47,7 @@ acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement-per-second', 'lower-confidence-bound', ...
     'probability-of-improvement'};
 
-acquisitionFunc = acquisitionFuncs{1};
+acquisitionFunc = acquisitionFuncs{3};
 maxObjectiveEvaluations = 100;
 
 % Perform Bayesian optimisation

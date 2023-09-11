@@ -1,115 +1,122 @@
-% % Number of steps per episode
-% numberOfTimeSteps = 200;
-% numberOfEpisodes = 1000;
-% 
-% scenario = 1;
-% omegaRScale = 1;
-% omegaQScale = 1;
-% testProposition4 = true;
-% numObs = 50;
-% obsPeriods = [1 5 10];
-% % obsPeriods = 1;
-% numSubgraph = length(obsPeriods);
-% 
-% 
-% % R11s = 0.5:0.2:1.5;
-% % R22s = 0.5:0.2:1.5;
-% % Q11s = 0.5:0.2:1.5;
-% % Q22s = 0.5:0.2:1.5;
-% 
-% %GROUND TRUTH
-% R11s = 0.2;
-% R22s = 0.1;
-% Q11s = 1;
-% Q22s = 2;
-% 
-% 
-% totalCombinations = length(R11s) * length(R22s) * length(Q11s) * length(Q22s);
-% 
-% % Flatten the grid into a single list of combinations
-% allCombinations = combvec(R11s, R22s, Q11s, Q22s)';
-% 
-% parfor idx = 1:totalCombinations
-%     R11 = allCombinations(idx, 1);
-%     R22 = allCombinations(idx, 2);
-%     Q11 = allCombinations(idx, 3);
-%     Q22 = allCombinations(idx, 4);
-% 
-%     % Create sigmaR and sigmaQ for this combination
-%     sigmaR = diag([R11, R22]);
-%     sigmaQ = diag([Q11, Q22]);
-% 
-%     % Initialize episode-specific storage
-%     if numSubgraph == 1
-%         % Compute the number of edges
-%         numberOfEdges = 2 * numObs - 1 + ...
-%             floor((numberOfTimeSteps - numObs) / obsPeriod) + ...
-%             numberOfTimeSteps - numObs;
-%         chi2Store = zeros(numberOfEpisodes, numberOfEdges);
-%         chi2SumStore = zeros(numberOfEpisodes, 1);
-%     else
-%         chi2Store = zeros(numberOfEpisodes, numSubgraph);
-%         chi2SumStore = zeros(numSubgraph, 1);
-%     end
-% 
-% 
-%     % Call the function
-%     [chi2SumStore(1), chi2Store(1, :), ~, ~, dimX, dimZ] = linear2dof(numberOfTimeSteps, omegaRScale, omegaQScale, ...
-%         testProposition4, numObs, obsPeriods, numSubgraph, scenario, sigmaR, sigmaQ); % <- Use your specific input arguments here
-% 
-%     for r = 2 : numberOfEpisodes
-%         fprintf('%03d\n', r)
-%         [chi2SumStore(r), chi2Store(r, :)] = ...
-%             linear2dof(numberOfTimeSteps, ...
-%             omegaRScale, omegaQScale, testProposition4, ...
-%             numObs, obsPeriods, numSubgraph, scenario, sigmaR, sigmaQ);
-%     end
-% 
-%     % Compute the number of degrees of freedom
-%     if (testProposition4 == true)
-%         N = dimZ - dimX;
-%     else
-%         N = dimZ;
-%     end
-%     
-%     if numSubgraph == 1
-%         meanChi2 = mean(chi2SumStore);
-%         covChi2 = cov(chi2SumStore);
-%         
-%         C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
-%     else
-%         % Compute the mean and covariance for each subgraph
-%         C = zeros(1, numSubgraph);
-%         for i = 1:numSubgraph
-%             meanChi2 = mean(chi2Store(:, i));
-%             covChi2 = cov(chi2Store(:, i));
-%         
-%             % Compute the number of degrees of freedom
-%             if (testProposition4 == true)
-%                 N = dimZ(i) - dimX(i);
-%             else
-%                 N = dimZ(i);
-%             end
-%     
-%             % Compute the Consistency Measurement for each subgraph
-%             C(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
-%         end
-%         C_Sum = sum(C);
-% 
-%         fid = fopen('D:\University\UCL\project\2dlinearResults.txt', 'a+');
-%         str = strjoin({sprintf('%.2f %.2f %.2f %.2f', R11, R22, Q11, Q22), sprintf(' %d', C), sprintf(' %d\n', sum(C))});
-%         fprintf(fid, '%s', str);
-%         fclose(fid);
-%     end
-% end
+% THIS SCRIPT IS USED TO TEST 2D LINEAR EXAMPLE. PLEASE ONLY UNCOMMENT THE
+% FUNCTION PART AND CHANGE THE FUNCTION NAME TO "linear2Dof", IF WE ARE
+% TRYING TO TEST BO ON 2D CASE. PLEASE UNCOMMENT THE ABOVE CODE AND CHANGE
+% THE FUNCTION NAME TO "linear2dof" IF TESTING THE MEAN AND COVARIANCE
+% VALUES.
+
+% Number of steps per episode
+numberOfTimeSteps = 200;
+numberOfEpisodes = 1000;
+
+scenario = 1;
+omegaRScale = 1;
+omegaQScale = 1;
+testProposition4 = true;
+numObs = 50;
+obsPeriods = [1 5 10];
+% obsPeriods = 1;
+numSubgraph = length(obsPeriods);
 
 
+% R11s = 0.1:0.2:2;
+% R22s = 0.1:0.2:2;
+% Q11s = 1:0.2:3;
+% Q22s = 1:0.2:3;
+
+% GROUND TRUTH
+R11s = 0.2;
+R22s = 0.1;
+Q11s = 1;
+Q22s = 2;
+
+totalCombinations = length(R11s) * length(R22s) * length(Q11s) * length(Q22s);
+
+% Flatten the grid into a single list of combinations
+allCombinations = combvec(R11s, R22s, Q11s, Q22s)';
+
+parfor idx = 1:totalCombinations
+    R11 = allCombinations(idx, 1);
+    R22 = allCombinations(idx, 2);
+    Q11 = allCombinations(idx, 3);
+    Q22 = allCombinations(idx, 4);
+
+    % Create sigmaR and sigmaQ for this combination
+    sigmaR = diag([R11, R22]);
+    sigmaQ = diag([Q11, Q22]);
+
+    % Initialize episode-specific storage
+    if numSubgraph == 1
+        % Compute the number of edges
+        numberOfEdges = 2 * numObs - 1 + ...
+            floor((numberOfTimeSteps - numObs) / obsPeriods) + ...
+            numberOfTimeSteps - numObs;
+        chi2Store = zeros(numberOfEpisodes, numberOfEdges);
+        chi2SumStore = zeros(numberOfEpisodes, 1);
+    else
+        chi2Store = zeros(numberOfEpisodes, numSubgraph);
+        chi2SumStore = zeros(numSubgraph, 1);
+    end
+
+
+    % Call the function
+    [chi2SumStore(1), chi2Store(1, :), ~, ~, dimX, dimZ] = linear2dof(numberOfTimeSteps, omegaRScale, omegaQScale, ...
+        testProposition4, numObs, obsPeriods, numSubgraph, scenario, sigmaR, sigmaQ); % <- Use your specific input arguments here
+
+    for r = 2 : numberOfEpisodes
+        fprintf('%03d\n', r)
+        [chi2SumStore(r), chi2Store(r, :)] = ...
+            linear2dof(numberOfTimeSteps, ...
+            omegaRScale, omegaQScale, testProposition4, ...
+            numObs, obsPeriods, numSubgraph, scenario, sigmaR, sigmaQ);
+    end
+
+    % Compute the number of degrees of freedom
+    if (testProposition4 == true)
+        N = dimZ - dimX;
+    else
+        N = dimZ;
+    end
+    
+    if numSubgraph == 1
+        meanChi2 = mean(chi2SumStore);
+        covChi2 = cov(chi2SumStore);
+        
+        C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
+        fid = fopen('D:\University\UCL\project\2dlinearResults_obs1.txt', 'a+');
+        str = strjoin({sprintf('%.2f %.2f %.2f %.2f', R11, R22, Q11, Q22), sprintf(' %d', C), sprintf(' %d\n', sum(C))});
+        fprintf(fid, '%s', str);
+        fclose(fid);
+    else
+        % Compute the mean and covariance for each subgraph
+        C = zeros(1, numSubgraph);
+        for i = 1:numSubgraph
+            meanChi2 = mean(chi2Store(:, i));
+            covChi2 = cov(chi2Store(:, i));
+        
+            % Compute the number of degrees of freedom
+            if (testProposition4 == true)
+                N = dimZ(i) - dimX(i);
+            else
+                N = dimZ(i);
+            end
+    
+            % Compute the Consistency Measurement for each subgraph
+            C(i) = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));
+        end
+        C_Sum = sum(C);
+
+        fid = fopen('D:\University\UCL\project\2dlinearResults_obs1_5_10.txt', 'a+');
+        str = strjoin({sprintf('%.2f %.2f %.2f %.2f', R11, R22, Q11, Q22), sprintf(' %d', C), sprintf(' %d\n', sum(C))});
+        fprintf(fid, '%s', str);
+        fclose(fid);
+    end
+end
 
 
 
 
 function [chi2, chi2List, X, Px, dimX, dimZ] = ...
-    linear2Dof(numberOfTimeSteps, omegaRScale, omegaQScale, ...
+    linear2dof(numberOfTimeSteps, omegaRScale, omegaQScale, ...
     testProposition4, numObs, obsPeriods, numSubgraph, scenario, sigmaR, sigmaQ)
 
     import g2o.core.*;

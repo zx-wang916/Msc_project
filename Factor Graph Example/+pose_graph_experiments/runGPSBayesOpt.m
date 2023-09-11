@@ -21,26 +21,26 @@ numberOfEpisodes = 2000;
 testProposition4 = true;
 
 % Define the search space for R and Q values
-% variables = [optimizableVariable('R11', [0.1, 1.9]);
-%              optimizableVariable('R22', [0.1, 1.9]);
-%              optimizableVariable('Q11', [0.01, 0.5]);
-%              optimizableVariable('Q22', [0.01, 0.5]);
-%              optimizableVariable('Q33', [0.001, 0.05])];
+variables = [optimizableVariable('R11', [0.1, 1.9]);
+             optimizableVariable('R22', [0.1, 1.9]);
+             optimizableVariable('Q11', [0.01, 0.5]);
+             optimizableVariable('Q22', [0.01, 0.5]);
+             optimizableVariable('Q33', [0.001, 0.05])];
 
 % variables = [optimizableVariable('R11', [0.1, 1.9]);
 %              optimizableVariable('R22', [0.1, 1.9])
 %             ];
 
-variables = [optimizableVariable('Q11', [0.01, 0.5]);
-             optimizableVariable('Q22', [0.01, 0.5]);
-             optimizableVariable('Q33', [0.001, 0.05])];
+% variables = [optimizableVariable('Q11', [0.01, 0.5]);
+%              optimizableVariable('Q22', [0.01, 0.5]);
+%              optimizableVariable('Q33', [0.001, 0.05])];
 
 acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement', 'expected-improvement-plus', ...
     'expected-improvement-per-second', 'lower-confidence-bound', ...
     'probability-of-improvement'};
 
-acquisitionFunc = acquisitionFuncs{3};
+acquisitionFunc = acquisitionFuncs{1};
 maxObjectiveEvaluations = 100;
 
 % Perform Bayesian optimisation
@@ -85,15 +85,15 @@ function cVal = targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testPropo
     import odometry_model_answer.*;
     
     % Extract the variables
-%     R11 = x.R11;
-%     R22 = x.R22;
+    R11 = x.R11;
+    R22 = x.R22;
     Q11 = x.Q11;
     Q22 = x.Q22;
     Q33 = x.Q33;
 
     % Construct R and Q matrices
-    R = eye(2);
-%     R = diag([R11, R22]);
+%     R = eye(2);
+    R = diag([R11, R22]);
     Q = diag([Q11, Q22, Q33].^2) ;
 %     Q = diag([0.1 0.05 pi/180].^2);
 

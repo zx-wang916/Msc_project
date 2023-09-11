@@ -17,8 +17,9 @@ scenario = 1;
 % RM = 0.1 : 0.05 : 1.9;
 % QM = 0.1 : 0.05 : 1.9;
 
-RM = 1.0355;
-QM = 0.96101;
+
+RM = 1;
+QM = 1;
 
 % basePath = "D:\University\UCL\project\";
 % fileName = "frob_results.txt";
@@ -40,15 +41,6 @@ for omegaRScale = RM
     
     % Number of subgraphs
     numSubgraph = length(obsPeriod);
-    
-%     if (omegaQScale ~= 1 || omegaRScale ~= 1 && numSubgraph == 1)
-%         cov_gt = readmatrix("D:\University\UCL\project\week13\cov_gt_" + ...
-%             num2str(numObs) + '_' + num2str(obsPeriod) ...
-%             + '.csv');
-%         X_gt = readmatrix("D:\University\UCL\project\week13\X_gt_" + ...
-%             num2str(numObs) + '_' + num2str(obsPeriod) ...
-%             + '.csv');
-%     end
     
     % If set to false, we test proposition 3, which initializes the graph at the
     % ground truth value, and does not optimize. If set to true, we test
@@ -104,31 +96,6 @@ for omegaRScale = RM
         
         Px = full(Px{1});
         X = X{1};
-        if (omegaQScale == 1 && omegaRScale == 1 && numSubgraph == 1)
-            % Comment the following if need to check performance for
-            % suboptimal omega pairs using brute force
-            %{
-            writematrix(Px, "D:\University\UCL\project\week13\cov_gt_" + ...
-                num2str(numObs) + '_' + num2str(obsPeriod) ...
-                + '.csv')
-            writematrix(X, "D:\University\UCL\project\week13\X_gt_" + ...
-                num2str(numObs) + '_' + num2str(obsPeriod) ...
-                + '.csv')
-            %}
-%             disp("Jump over (1, 1)")
-%             continue
-        else
-%             Px_diff = Px - cov_gt;
-%             X_diff = X - X_gt;
-%             Px_FrobeniusNorm = norm(Px_diff, 'fro');
-%             X_FrobeniusNorm = norm(X_diff, 'fro');
-
-%             % Slightly cheesy way to append to an existing file
-%             fid = fopen('D:\University\UCL\project\frob_results.txt', 'a+');
-%             str = strjoin({sprintf('%.2f %.2f', omegaQScale, omegaRScale), sprintf(' %f', Px_FrobeniusNorm), sprintf(' %f\n', X_FrobeniusNorm)});
-%             fprintf(fid, '%s', str);
-%             fclose(fid);
-        end
   
         % Compute the Consistency Measurement
         C = abs(log(meanChi2/N)) + abs(log(covChi2/(2*N)));

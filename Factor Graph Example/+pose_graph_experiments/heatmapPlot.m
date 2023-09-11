@@ -52,8 +52,8 @@ function generateHeatmap(filePath, omegaRScaleArray, omegaQScaleArray)
     customColormap = [firstHalf; secondHalf];
     colormap(customColormap);
 
-    % Mark the minimum value location with a yellow cross
-    hold on;
-    plot(omegaRScaleArray(col), omegaQScaleArray(row), '+', 'MarkerSize', 10, 'LineWidth', 1.5 , 'Color', 'red'); 
+%     % Mark the minimum value location with a yellow cross
+%     hold on;
+%     plot(omegaRScaleArray(col), omegaQScaleArray(row), '+', 'MarkerSize', 10, 'LineWidth', 1.5 , 'Color', 'red'); 
 end
 

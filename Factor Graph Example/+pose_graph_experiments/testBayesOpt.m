@@ -12,7 +12,7 @@ numberOfEpisodes = 2000;
 % ground truth value, and does not optimise. If set to true, we test
 % proposition 4, which is the distribution after optimising with noisy
 % measurements
-testProposition4 = false;
+testProposition4 = true;
 
 % Define the search space for Omega values
 variables = [optimizableVariable('omegaRScale', [0.1, 1.9]);
@@ -23,7 +23,7 @@ acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement-per-second', 'lower-confidence-bound', ...
     'probability-of-improvement'};
 
-acquisitionFunc = acquisitionFuncs{1};
+acquisitionFunc = acquisitionFuncs{3};
 maxObjectiveEvaluations = 100;
 
 % Perform Bayesian optimisation

@@ -14,20 +14,21 @@ scenario = 1;
 % ground truth value, and does not optimise. If set to true, we test
 % proposition 4, which is the distribution after optimising with noisy
 % measurements
-testProposition4 = true;
+testProposition4 = false;
 
 % Parameters to change the frequency of measurement updates
 numObs = 50;
 obsPeriod = [1 5 10];
+% obsPeriod = 1;
 
 % Number of subgraphs
 numSubgraph = length(obsPeriod);
 
 % Define the search space for R and Q scales
-variables = [optimizableVariable('R11', [0.1, 10]);
-             optimizableVariable('R22', [0.1, 10]);
-             optimizableVariable('Q11', [1, 20]);
-             optimizableVariable('Q22', [1, 20]);];
+variables = [optimizableVariable('R11', [0.1, 2]);
+             optimizableVariable('R22', [0.1, 2]);
+             optimizableVariable('Q11', [1, 3]);
+             optimizableVariable('Q22', [1, 3]);];
 
 acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'expected-improvement', 'expected-improvement-plus', ...
@@ -35,7 +36,7 @@ acquisitionFuncs = {'expected-improvement-per-second-plus', ...
     'probability-of-improvement'};
 
 acquisitionFunc = acquisitionFuncs{1};
-maxObjectiveEvaluations = 200;
+maxObjectiveEvaluations = 100;
 
 % Perform Bayesian optimisation
 results = bayesopt(@(x) targetFunction(x, numberOfTimeSteps, numberOfEpisodes, testProposition4, numObs, obsPeriod, numSubgraph, scenario), variables, ...
